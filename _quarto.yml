@@ -1,0 +1,27 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "PHILOSOPHY OF STATISTICS — Lab Notes"
+  site-url: "https://IsadoreNabi.github.io/philosophyofstatistics"
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: About
+        href: about.qmd
+    right:
+      - text: "Powered by Marxist Philosophy of Science"
+        href: "https://www.marxistphilosophyofscience.com"
+      - icon: rss
+        href: index.xml
+  page-footer:
+    left: 'Powered by <a href="https://www.marxistphilosophyofscience.com">Marxist Philosophy of Science</a>'
+    right: "© 2025 José Mauricio Gómez Julián"
+
+format:
+  html:
+    theme: cosmo
+
+editor: visual
