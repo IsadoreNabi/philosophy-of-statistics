@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="José Mauricio Gómez Julián">
+<meta name="dcterms.date" content="2025-09-17">
+<meta name="description" content="De pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética.">
+
+<title>DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS – PHILOSOPHY OF STATISTICS — Lab Notes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-9859d952baf36b9a7db628bbb9f3169e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">PHILOSOPHY OF STATISTICS — Lab Notes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.marxistphilosophyofscience.com"> 
+<span class="menu-text">Powered by Marxist Philosophy of Science</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS</h1>
+                  <div>
+        <div class="description">
+          De pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">R</div>
+                <div class="quarto-category">packages</div>
+                <div class="quarto-category">Bayesian</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>José Mauricio Gómez Julián </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 17, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#planteamiento-del-problema" id="toc-planteamiento-del-problema" class="nav-link active" data-scroll-target="#planteamiento-del-problema">1. Planteamiento del problema</a></li>
+  <li><a href="#construcción-de-la-verosimilitud-sectorial-l" id="toc-construcción-de-la-verosimilitud-sectorial-l" class="nav-link" data-scroll-target="#construcción-de-la-verosimilitud-sectorial-l">2. Construcción de la verosimilitud sectorial <span class="math inline">\(L\)</span></a></li>
+  <li><a href="#actualizaciones-deterministas-del-posterior-sin-mcmc" id="toc-actualizaciones-deterministas-del-posterior-sin-mcmc" class="nav-link" data-scroll-target="#actualizaciones-deterministas-del-posterior-sin-mcmc">2. Actualizaciones deterministas del posterior (sin MCMC)</a></li>
+  <li><a href="#diagnósticos-coherencia-estabilidad-interpretabilidad" id="toc-diagnósticos-coherencia-estabilidad-interpretabilidad" class="nav-link" data-scroll-target="#diagnósticos-coherencia-estabilidad-interpretabilidad">3. Diagnósticos: coherencia, estabilidad, interpretabilidad</a></li>
+  <li><a href="#api-end-to-end" id="toc-api-end-to-end" class="nav-link" data-scroll-target="#api-end-to-end">4. API end-to-end</a></li>
+  <li><a href="#demostración-sintética-y-reproducible" id="toc-demostración-sintética-y-reproducible" class="nav-link" data-scroll-target="#demostración-sintética-y-reproducible">5. Demostración sintética y reproducible</a></li>
+  <li><a href="#flujo-con-datos-reales-desactivado-por-velocidad" id="toc-flujo-con-datos-reales-desactivado-por-velocidad" class="nav-link" data-scroll-target="#flujo-con-datos-reales-desactivado-por-velocidad">6. Flujo con datos reales (desactivado por velocidad)</a></li>
+  <li><a href="#lectura-de-los-gráficos" id="toc-lectura-de-los-gráficos" class="nav-link" data-scroll-target="#lectura-de-los-gráficos">7. Lectura de los gráficos</a></li>
+  <li><a href="#parámetros-prácticos-por-defecto" id="toc-parámetros-prácticos-por-defecto" class="nav-link" data-scroll-target="#parámetros-prácticos-por-defecto">8. Parámetros prácticos por defecto</a></li>
+  <li><a href="#innovación-clave" id="toc-innovación-clave" class="nav-link" data-scroll-target="#innovación-clave">9. Innovación clave</a></li>
+  <li><a href="#métodos-relacionados-y-posicionamiento" id="toc-métodos-relacionados-y-posicionamiento" class="nav-link" data-scroll-target="#métodos-relacionados-y-posicionamiento">9.1. Métodos relacionados y posicionamiento</a></li>
+  <li><a href="#referencias" id="toc-referencias" class="nav-link" data-scroll-target="#referencias">9.2. Referencias</a></li>
+  <li><a href="#aplicaciones-económicas" id="toc-aplicaciones-económicas" class="nav-link" data-scroll-target="#aplicaciones-económicas">9.3. Aplicaciones económicas</a>
+  <ul class="collapse">
+  <li><a href="#desagregación-del-índice-de-precios-al-consumidor" id="toc-desagregación-del-índice-de-precios-al-consumidor" class="nav-link" data-scroll-target="#desagregación-del-índice-de-precios-al-consumidor">9.3.1. Desagregación del Índice de Precios al Consumidor</a></li>
+  </ul></li>
+  <li><a href="#aplicaciones-más-allá-de-la-economía" id="toc-aplicaciones-más-allá-de-la-economía" class="nav-link" data-scroll-target="#aplicaciones-más-allá-de-la-economía">9.4. Aplicaciones más allá de la economía</a></li>
+  <li><a href="#impacto-práctico" id="toc-impacto-práctico" class="nav-link" data-scroll-target="#impacto-práctico">9.5. Impacto práctico</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<blockquote class="blockquote">
+<p>Se presenta un marco práctico para la desagregación sectorial de índices agregados (p.&nbsp;ej., IPC) mediante actualizaciones deterministas del posterior y diagnósticos explícitos. La implementación corresponde al paquete <code>BayesianDisaggregation</code> de R y prioriza la coherencia con una verosimilitud sectorial, la estabilidad numérica/temporal y la interpretabilidad.</p>
+</blockquote>
+<section id="planteamiento-del-problema" class="level2">
+<h2 class="anchored" data-anchor-id="planteamiento-del-problema">1. Planteamiento del problema</h2>
+<p>Sea un índice agregado observado en periodos <span class="math inline">\(t = 1,\dots,T\)</span>. El objetivo es una descomposición sectorial en <span class="math inline">\(K\)</span> componentes cuyas proporciones yacen en el simplex unitario, con filas que suman uno. El flujo parte de una matriz de pesos previa <span class="math inline">\(P \in \mathbb{R}^{T \times K}\)</span> (estocástica por filas), construye un vector de verosimilitud sectorial <span class="math inline">\(L \in \Delta^{K-1}\)</span>, lo propaga en el tiempo hacia <span class="math inline">\(L_T \in \mathbb{R}^{T \times K}\)</span> y aplica una actualización determinista para obtener el posterior <span class="math inline">\(W\)</span> (también estocástico por filas).</p>
+</section>
+<section id="construcción-de-la-verosimilitud-sectorial-l" class="level2">
+<h2 class="anchored" data-anchor-id="construcción-de-la-verosimilitud-sectorial-l">2. Construcción de la verosimilitud sectorial <span class="math inline">\(L\)</span></h2>
+<p><strong>Saliencia de la PC1.</strong> Se centran en el tiempo las columnas de <span class="math inline">\(P\)</span>; se calcula SVD/PCA sobre la matriz centrada. Las entradas absolutas del primer vector singular derecho se normalizan para obtener un <span class="math inline">\(L\)</span> no negativo. Cuando la PC1 es degenerada, se recurre a un respaldo basado en medias de columna (renormalizadas). Se registran como atributos las cargas, la varianza explicada y un indicador del respaldo.</p>
+<p><strong>Propagación temporal.</strong> Un perfil no negativo <span class="math inline">\(w_t\)</span> expande <span class="math inline">\(L\)</span> hacia <span class="math inline">\(L_T\)</span> mediante normalización por filas. Existen patrones incorporados como <code>constant</code>, <code>recent</code> (creciente en <span class="math inline">\(t\)</span>), <code>linear</code> y <code>bell</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># From the package:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># L  &lt;- compute_L_from_P(P)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># LT &lt;- spread_likelihood(L, T_periods = nrow(P), pattern = "recent")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="actualizaciones-deterministas-del-posterior-sin-mcmc" class="level2">
+<h2 class="anchored" data-anchor-id="actualizaciones-deterministas-del-posterior-sin-mcmc">2. Actualizaciones deterministas del posterior (sin MCMC)</h2>
+<p>Se ofrecen cuatro opciones:</p>
+<ul>
+<li><strong>Promedio ponderado:</strong> <span class="math inline">\(W = \mathrm{norm1}\{\lambda P + (1-\lambda) L_T\}\)</span>.</li>
+<li><strong>Multiplicativa:</strong> <span class="math inline">\(W = \mathrm{norm1}\{P \odot L_T\}\)</span>.</li>
+<li><strong>Media Dirichlet:</strong> conjugación analítica con <span class="math inline">\(\gamma&gt;0\)</span>; <span class="math inline">\(\gamma\)</span> menor agudiza la media posterior.</li>
+<li><strong>Mezcla adaptativa:</strong> la mezcla por sector escala con la volatilidad previa.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_weighted(P, LT, lambda = 0.7)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_multiplicative(P, LT)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_dirichlet(P, LT, gamma = 0.1)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_adaptive(P, LT)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Todas las actualizaciones preservan la suma-unidad por fila por construcción.</p>
+</section>
+<section id="diagnósticos-coherencia-estabilidad-interpretabilidad" class="level2">
+<h2 class="anchored" data-anchor-id="diagnósticos-coherencia-estabilidad-interpretabilidad">3. Diagnósticos: coherencia, estabilidad, interpretabilidad</h2>
+<ul>
+<li><strong>Coherencia:</strong> ganancia de correlación de la media temporal posterior <span class="math inline">\(\bar{w}\)</span> frente a la previa <span class="math inline">\(\bar{p}\)</span> con respecto a <span class="math inline">\(L\)</span>, acotada en <span class="math inline">\([0,1]\)</span> mediante un reescalamiento lineal.</li>
+<li><strong>Estabilidad numérica y temporal:</strong> penalización exponencial por desviaciones de suma de fila/negativos más una medida de suavidad basada en diferencias absolutas promedio en el tiempo; se combinan en una puntuación compuesta.</li>
+<li><strong>Interpretabilidad:</strong> preservación de la estructura sectorial <span class="math inline">\(\mathrm{corr}(\bar{p},\bar{w})\)</span> y plausibilidad de los cambios relativos medios (percentil 90).</li>
+</ul>
+<p>Las funciones expuestas incluyen <code>coherence_score()</code>, <code>numerical_stability_exp()</code>, <code>temporal_stability()</code>, <code>stability_composite()</code> e <code>interpretability_score()</code>.</p>
+</section>
+<section id="api-end-to-end" class="level2">
+<h2 class="anchored" data-anchor-id="api-end-to-end">4. API end-to-end</h2>
+<p>Un envoltorio organiza E/S, construcción de <span class="math inline">\(L\)</span>, posterior, métricas y exportaciones.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bayesian_disaggregate(</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   path_cpi, path_weights,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   method = c("weighted","multiplicative","dirichlet","adaptive"),</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   lambda = 0.7, gamma = 0.1,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   coh_mult = 3.0, coh_const = 0.5,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   stab_a = 1000, stab_b = 10, stab_kappa = 50,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   likelihood_pattern = "recent"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>La salida incluye <span class="math inline">\(W\)</span> en formato “tidy”, diagnósticos, exportaciones opcionales a Excel y gráficos rápidos.</p>
+</section>
+<section id="demostración-sintética-y-reproducible" class="level2">
+<h2 class="anchored" data-anchor-id="demostración-sintética-y-reproducible">5. Demostración sintética y reproducible</h2>
+<p>El siguiente bloque sintetiza un previo pequeño, deriva <span class="math inline">\(L\)</span> y <span class="math inline">\(L_T\)</span>, compara posteriores y calcula métricas clave. Renderiza con rapidez en equipos típicos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>T <span class="ot">&lt;-</span> <span class="dv">10</span>; K <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>P <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rexp</span>(T<span class="sc">*</span>K), <span class="at">nrow =</span> T); P <span class="ot">&lt;-</span> P <span class="sc">/</span> <span class="fu">rowSums</span>(P)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>L  <span class="ot">&lt;-</span> <span class="fu">compute_L_from_P</span>(P)                       <span class="co"># PCA/SVD con respaldo robusto</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>LT <span class="ot">&lt;-</span> <span class="fu">spread_likelihood</span>(L, T, <span class="at">pattern =</span> <span class="st">"recent"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>W_adapt <span class="ot">&lt;-</span> <span class="fu">posterior_adaptive</span>(P, LT)            <span class="co"># recomendado con volatilidades sectoriales heterogéneas</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>coh  <span class="ot">&lt;-</span> <span class="fu">coherence_score</span>(P, W_adapt, L)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>stab <span class="ot">&lt;-</span> <span class="fu">stability_composite</span>(W_adapt, <span class="at">a =</span> <span class="dv">1000</span>, <span class="at">b =</span> <span class="dv">10</span>, <span class="at">kappa =</span> <span class="dv">50</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>intr <span class="ot">&lt;-</span> <span class="fu">interpretability_score</span>(P, W_adapt)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>eff  <span class="ot">&lt;-</span> <span class="fl">0.65</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="fl">0.30</span><span class="sc">*</span>coh <span class="sc">+</span> <span class="fl">0.25</span><span class="sc">*</span>stab <span class="sc">+</span> <span class="fl">0.25</span><span class="sc">*</span>intr <span class="sc">+</span> <span class="fl">0.20</span><span class="sc">*</span>eff</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(<span class="at">coherence=</span>coh, <span class="at">stability=</span>stab, <span class="at">interpretability=</span>intr,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">efficiency=</span>eff, <span class="at">composite=</span>comp), <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>La demostración replica el ejemplo rápido del manual y sus rangos objetivo.</p>
+</section>
+<section id="flujo-con-datos-reales-desactivado-por-velocidad" class="level2">
+<h2 class="anchored" data-anchor-id="flujo-con-datos-reales-desactivado-por-velocidad">6. Flujo con datos reales (desactivado por velocidad)</h2>
+<p>Activar <code>eval: true</code> tras definir rutas a archivos locales de Excel. Se ejecuta una cuadrícula compacta, se re-ejecuta la mejor configuración y se escribe un único Excel con todos los artefactos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rutas de ejemplo (Windows: usar barras normales o cadenas crudas)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>path_cpi <span class="ot">&lt;-</span> <span class="st">"E:/Carpeta de Estudio/.../CPI.xlsx"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>path_w   <span class="ot">&lt;-</span> <span class="st">"E:/Carpeta de Estudio/.../PESOS VAB.xlsx"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>base_res <span class="ot">&lt;-</span> <span class="fu">bayesian_disaggregate</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">path_cpi =</span> path_cpi, <span class="at">path_weights =</span> path_w,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"adaptive"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda =</span> <span class="fl">0.7</span>, <span class="at">gamma =</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">coh_mult =</span> <span class="fl">3.0</span>, <span class="at">coh_const =</span> <span class="fl">0.5</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">stab_a =</span> <span class="dv">1000</span>, <span class="at">stab_b =</span> <span class="dv">10</span>, <span class="at">stab_kappa =</span> <span class="dv">60</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">likelihood_pattern =</span> <span class="st">"recent"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>base_res<span class="sc">$</span>metrics</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Puede añadirse una búsqueda en rejilla mínima y la exportación a Excel en un solo archivo siguiendo los auxiliares del paquete.</p>
+</section>
+<section id="lectura-de-los-gráficos" class="level2">
+<h2 class="anchored" data-anchor-id="lectura-de-los-gráficos">7. Lectura de los gráficos</h2>
+<p>El mapa de calor del posterior muestra persistencia y suavidad sectorial en el tiempo; las líneas de sectores dominantes enfatizan componentes principales; la hoja “sectoral-CPI” presenta <span class="math inline">\(\hat{Y}_{t,k} = \mathrm{CPI}_t \times W_{t,k}\)</span>, permitiendo una vista desagregada de la serie agregada.</p>
+</section>
+<section id="parámetros-prácticos-por-defecto" class="level2">
+<h2 class="anchored" data-anchor-id="parámetros-prácticos-por-defecto">8. Parámetros prácticos por defecto</h2>
+<p>La mezcla adaptativa es robusta con volatilidad previa heterogénea; en caso contrario, la regla ponderada con <span class="math inline">\(\lambda \in [0.7, 0.9]\)</span> suele funcionar bien. El escalado de coherencia <span class="math inline">\((\texttt{mult}=3.0,\ \texttt{const}=0.5)\)</span> produce una puntuación 0–1 interpretable. La penalización numérica exponencial es deliberadamente estricta para hacer cumplir estocasticidad por filas en ejecuciones automáticas.</p>
+</section>
+<section id="innovación-clave" class="level2">
+<h2 class="anchored" data-anchor-id="innovación-clave">9. Innovación clave</h2>
+<p>Se aporta, hasta donde se tiene conocimiento, una solución analítica al problema de <strong>transferencia de estructura con intermediario incierto</strong>: la PCA sobre pesos de desagregación centrados en el tiempo provee la señal de verosimilitud para una actualización bayesiana cerrada en el simplex, habilitando la desagregación sectorial inmediata de una serie agregada no relacionada.</p>
+</section>
+<section id="métodos-relacionados-y-posicionamiento" class="level2">
+<h2 class="anchored" data-anchor-id="métodos-relacionados-y-posicionamiento">9.1. Métodos relacionados y posicionamiento</h2>
+<p><strong>Problema.</strong> Con frecuencia se requiere comparar una serie <strong>agregada</strong> <span class="math inline">\(X_t\)</span> (p.&nbsp;ej., IPC) con una serie <strong>desagregada</strong> <span class="math inline">\(Y_{t,k}\)</span> en sectores <span class="math inline">\(k\)</span>, contando solo con un <strong>intermediario imperfecto</strong> <span class="math inline">\(Z_{t,k}\)</span> que aproxima la estructura transversal (p.&nbsp;ej., valor agregado sectorial). El reto conceptual consiste en <strong>transferir estructura</strong> desde <span class="math inline">\(Z\)</span> para desagregar <span class="math inline">\(X\)</span>, <strong>reconociendo la incertidumbre</strong> de <span class="math inline">\(Z\)</span>.</p>
+<p><strong>Aporte del paquete.</strong> <span class="math inline">\(Z\)</span> se trata como <strong>previo bayesiano</strong> sobre pesos sectoriales <span class="math inline">\(P_{t,k}\)</span> (filas en el simplex); se extrae una <strong>señal temporal de baja dimensión</strong> mediante <strong>PCA por SVD</strong> en la matriz <span class="math inline">\(Z\)</span> centrada en el tiempo, y se utiliza dicha señal como <strong>verosimilitud analítica</strong> para obtener un <strong>posterior en forma cerrada</strong> <span class="math inline">\(W_{t,k}\)</span>. Luego, <span class="math inline">\(X_t\)</span> se desagrega como <span class="math inline">\(X_{t,k}=W_{t,k}\,X_t\)</span>. Todo el proceso es <strong>sin MCMC</strong> y computacionalmente ligero.</p>
+<p><strong>Lo que no se identificó en la literatura.</strong> No se encontró una metodología nombrada que: (i) parta de un <strong>intermediario estructural incierto</strong> <span class="math inline">\(Z\)</span>, (ii) <strong>derive una verosimilitud temporal</strong> desde <strong>PCA/SVD</strong> de <span class="math inline">\(Z\)</span>, y (iii) ejecute una <strong>actualización bayesiana analítica</strong> que produzca pesos posteriores de desagregación <strong>estocásticos por filas</strong> para desagregar una serie agregada distinta <span class="math inline">\(X_t\)</span>. Existen tradiciones cercanas, pero cada una omite al menos uno de estos elementos:</p>
+<ul>
+<li><strong>Balanceo biproporcional / RAS / IPF.</strong> Ajusta matrices para casar márgenes multiplicando filas/columnas iterativamente (Deming &amp; Stephan, 1940); <strong>no</strong> construye una verosimilitud desde PCA/SVD ni entrega un <strong>posterior probabilístico en el simplex</strong> para desagregación.</li>
+<li><strong>Desagregación temporal</strong> (Denton, Chow–Lin, Fernández). Distribuye agregados de baja frecuencia a alta frecuencia con series indicadoras; <strong>no</strong> aborda desagregación <strong>transversal</strong> con pesos en el simplex ni usa verosimilitudes derivadas de PCA.</li>
+<li><strong>Reconciliación de pronósticos jerárquicos</strong> (p.&nbsp;ej., MinT). Proyecta pronósticos en subespacios coherentes; enfoque de pronóstico y no una actualización bayesiana para pesos composicionales.</li>
+</ul>
+</section>
+<section id="referencias" class="level2">
+<h2 class="anchored" data-anchor-id="referencias">9.2. Referencias</h2>
+<p>Deming, W. E., &amp; Stephan, F. F. (1940). <em>The Annals of Mathematical Statistics, 11</em>(4), 427–444. <a href="https://doi.org/10.1214/aoms/1177731829">https://doi.org/10.1214/aoms/1177731829</a> Eurostat. (2013). <em>Handbook on quarterly national accounts</em>. ILO/IMF/OECD/Eurostat/UNECE/World Bank (2020). <em>Consumer Price Index Manual: Concepts and Methods</em>. Wickramasuriya, S. L., Athanasopoulos, G., &amp; Hyndman, R. J. (2019). <em>Statistica Sinica, 30</em>(4), 1555–1586. (Preprint: arXiv:1805.07245).</p>
+</section>
+<section id="aplicaciones-económicas" class="level2">
+<h2 class="anchored" data-anchor-id="aplicaciones-económicas">9.3. Aplicaciones económicas</h2>
+<section id="desagregación-del-índice-de-precios-al-consumidor" class="level3">
+<h3 class="anchored" data-anchor-id="desagregación-del-índice-de-precios-al-consumidor">9.3.1. Desagregación del Índice de Precios al Consumidor</h3>
+<p>La herramienta habilita análisis antes inviables: identificación de sectores impulsores de la inflación, evaluación del impacto diferencial de choques de precios y seguimiento de la dinámica sectorial de precios.</p>
+</section>
+</section>
+<section id="aplicaciones-más-allá-de-la-economía" class="level2">
+<h2 class="anchored" data-anchor-id="aplicaciones-más-allá-de-la-economía">9.4. Aplicaciones más allá de la economía</h2>
+<p>El marco se generaliza a cualquier dominio con <strong>transferencia de estructura</strong>: neurociencia, clima (downscaling con incertidumbre), epidemiología, procesamiento de señales y aprendizaje automático (adaptación de dominio con representaciones intermedias ruidosas).</p>
+</section>
+<section id="impacto-práctico" class="level2">
+<h2 class="anchored" data-anchor-id="impacto-práctico">9.5. Impacto práctico</h2>
+<p>Posibilita que bancos centrales, investigadores y analistas descompongan choques agregados en componentes sectoriales y diseñen intervenciones basadas en dinámica granular de precios.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/IsadoreNabi\.github\.io\/philosophy-of-statistics");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Powered by <a href="https://www.marxistphilosophyofscience.com">Marxist Philosophy of Science</a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>© 2025 José Mauricio Gómez Julián</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

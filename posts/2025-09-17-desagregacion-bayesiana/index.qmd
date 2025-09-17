@@ -1,0 +1,183 @@
+---
+title: "DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS"
+description: "De pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética."
+author: "José Mauricio Gómez Julián"
+date: 2025-09-17
+categories: [R, packages, Bayesian]
+format:
+  html:
+    toc: true
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> Se presenta un marco práctico para la desagregación sectorial de índices agregados (p. ej., IPC) mediante actualizaciones deterministas del posterior y diagnósticos explícitos. La implementación corresponde al paquete `BayesianDisaggregation` de R y prioriza la coherencia con una verosimilitud sectorial, la estabilidad numérica/temporal y la interpretabilidad.
+
+```{r}
+#| label: setup
+#| include: false
+# Mostrar errores en la página en lugar de abortar el render
+knitr::opts_chunk$set(error = TRUE)
+
+# Cargar paquete si está instalado
+have_pkg <- requireNamespace("BayesianDisaggregation", quietly = TRUE)
+if (have_pkg) {
+  library(BayesianDisaggregation)
+}
+```
+
+## 1. Planteamiento del problema
+
+Sea un índice agregado observado en periodos $t = 1,\dots,T$. El objetivo es una descomposición sectorial en $K$ componentes cuyas proporciones yacen en el simplex unitario, con filas que suman uno. El flujo parte de una matriz de pesos previa $P \in \mathbb{R}^{T \times K}$ (estocástica por filas), construye un vector de verosimilitud sectorial $L \in \Delta^{K-1}$, lo propaga en el tiempo hacia $L_T \in \mathbb{R}^{T \times K}$ y aplica una actualización determinista para obtener el posterior $W$ (también estocástico por filas).
+
+## 2. Construcción de la verosimilitud sectorial $L$
+
+**Saliencia de la PC1.** Se centran en el tiempo las columnas de $P$; se calcula SVD/PCA sobre la matriz centrada. Las entradas absolutas del primer vector singular derecho se normalizan para obtener un $L$ no negativo. Cuando la PC1 es degenerada, se recurre a un respaldo basado en medias de columna (renormalizadas). Se registran como atributos las cargas, la varianza explicada y un indicador del respaldo.
+
+**Propagación temporal.** Un perfil no negativo $w_t$ expande $L$ hacia $L_T$ mediante normalización por filas. Existen patrones incorporados como `constant`, `recent` (creciente en $t$), `linear` y `bell`.
+
+```r
+# From the package:
+# L  <- compute_L_from_P(P)
+# LT <- spread_likelihood(L, T_periods = nrow(P), pattern = "recent")
+```
+
+## 2. Actualizaciones deterministas del posterior (sin MCMC)
+
+Se ofrecen cuatro opciones:
+
+* **Promedio ponderado:** $W = \mathrm{norm1}\{\lambda P + (1-\lambda) L_T\}$.
+* **Multiplicativa:** $W = \mathrm{norm1}\{P \odot L_T\}$.
+* **Media Dirichlet:** conjugación analítica con $\gamma>0$; $\gamma$ menor agudiza la media posterior.
+* **Mezcla adaptativa:** la mezcla por sector escala con la volatilidad previa.
+
+```r
+# posterior_weighted(P, LT, lambda = 0.7)
+# posterior_multiplicative(P, LT)
+# posterior_dirichlet(P, LT, gamma = 0.1)
+# posterior_adaptive(P, LT)
+```
+
+Todas las actualizaciones preservan la suma-unidad por fila por construcción.
+
+## 3. Diagnósticos: coherencia, estabilidad, interpretabilidad
+
+* **Coherencia:** ganancia de correlación de la media temporal posterior $\bar{w}$ frente a la previa $\bar{p}$ con respecto a $L$, acotada en $[0,1]$ mediante un reescalamiento lineal.
+* **Estabilidad numérica y temporal:** penalización exponencial por desviaciones de suma de fila/negativos más una medida de suavidad basada en diferencias absolutas promedio en el tiempo; se combinan en una puntuación compuesta.
+* **Interpretabilidad:** preservación de la estructura sectorial $\mathrm{corr}(\bar{p},\bar{w})$ y plausibilidad de los cambios relativos medios (percentil 90).
+
+Las funciones expuestas incluyen `coherence_score()`, `numerical_stability_exp()`, `temporal_stability()`, `stability_composite()` e `interpretability_score()`.
+
+## 4. API end-to-end
+
+Un envoltorio organiza E/S, construcción de $L$, posterior, métricas y exportaciones.
+
+```r
+# bayesian_disaggregate(
+#   path_cpi, path_weights,
+#   method = c("weighted","multiplicative","dirichlet","adaptive"),
+#   lambda = 0.7, gamma = 0.1,
+#   coh_mult = 3.0, coh_const = 0.5,
+#   stab_a = 1000, stab_b = 10, stab_kappa = 50,
+#   likelihood_pattern = "recent"
+# )
+```
+
+La salida incluye $W$ en formato “tidy”, diagnósticos, exportaciones opcionales a Excel y gráficos rápidos.
+
+## 5. Demostración sintética y reproducible
+
+El siguiente bloque sintetiza un previo pequeño, deriva $L$ y $L_T$, compara posteriores y calcula métricas clave. Renderiza con rapidez en equipos típicos.
+
+```{r demo-synthetic, eval=have_pkg}
+set.seed(123)
+T <- 10; K <- 6
+P <- matrix(rexp(T*K), nrow = T); P <- P / rowSums(P)
+
+L  <- compute_L_from_P(P)                       # PCA/SVD con respaldo robusto
+LT <- spread_likelihood(L, T, pattern = "recent")
+
+W_adapt <- posterior_adaptive(P, LT)            # recomendado con volatilidades sectoriales heterogéneas
+coh  <- coherence_score(P, W_adapt, L)
+stab <- stability_composite(W_adapt, a = 1000, b = 10, kappa = 50)
+intr <- interpretability_score(P, W_adapt)
+
+eff  <- 0.65
+comp <- 0.30*coh + 0.25*stab + 0.25*intr + 0.20*eff
+
+round(data.frame(coherence=coh, stability=stab, interpretability=intr,
+                 efficiency=eff, composite=comp), 4)
+```
+
+La demostración replica el ejemplo rápido del manual y sus rangos objetivo.
+
+## 6. Flujo con datos reales (desactivado por velocidad)
+
+Activar `eval: true` tras definir rutas a archivos locales de Excel. Se ejecuta una cuadrícula compacta, se re-ejecuta la mejor configuración y se escribe un único Excel con todos los artefactos.
+
+```{r real-data, eval=FALSE}
+# Rutas de ejemplo (Windows: usar barras normales o cadenas crudas)
+path_cpi <- "E:/Carpeta de Estudio/.../CPI.xlsx"
+path_w   <- "E:/Carpeta de Estudio/.../PESOS VAB.xlsx"
+
+base_res <- bayesian_disaggregate(
+  path_cpi = path_cpi, path_weights = path_w,
+  method = "adaptive",
+  lambda = 0.7, gamma = 0.1,
+  coh_mult = 3.0, coh_const = 0.5,
+  stab_a = 1000, stab_b = 10, stab_kappa = 60,
+  likelihood_pattern = "recent"
+)
+
+base_res$metrics
+```
+
+Puede añadirse una búsqueda en rejilla mínima y la exportación a Excel en un solo archivo siguiendo los auxiliares del paquete.
+
+## 7. Lectura de los gráficos
+
+El mapa de calor del posterior muestra persistencia y suavidad sectorial en el tiempo; las líneas de sectores dominantes enfatizan componentes principales; la hoja “sectoral-CPI” presenta $\hat{Y}_{t,k} = \mathrm{CPI}_t \times W_{t,k}$, permitiendo una vista desagregada de la serie agregada.
+
+## 8. Parámetros prácticos por defecto
+
+La mezcla adaptativa es robusta con volatilidad previa heterogénea; en caso contrario, la regla ponderada con $\lambda \in [0.7, 0.9]$ suele funcionar bien. El escalado de coherencia $(\texttt{mult}=3.0,\ \texttt{const}=0.5)$ produce una puntuación 0–1 interpretable. La penalización numérica exponencial es deliberadamente estricta para hacer cumplir estocasticidad por filas en ejecuciones automáticas.
+
+## 9. Innovación clave
+
+Se aporta, hasta donde se tiene conocimiento, una solución analítica al problema de **transferencia de estructura con intermediario incierto**: la PCA sobre pesos de desagregación centrados en el tiempo provee la señal de verosimilitud para una actualización bayesiana cerrada en el simplex, habilitando la desagregación sectorial inmediata de una serie agregada no relacionada.
+
+## 9.1. Métodos relacionados y posicionamiento
+
+**Problema.** Con frecuencia se requiere comparar una serie **agregada** $X_t$ (p. ej., IPC) con una serie **desagregada** $Y_{t,k}$ en sectores $k$, contando solo con un **intermediario imperfecto** $Z_{t,k}$ que aproxima la estructura transversal (p. ej., valor agregado sectorial). El reto conceptual consiste en **transferir estructura** desde $Z$ para desagregar $X$, **reconociendo la incertidumbre** de $Z$.
+
+**Aporte del paquete.** $Z$ se trata como **previo bayesiano** sobre pesos sectoriales $P_{t,k}$ (filas en el simplex); se extrae una **señal temporal de baja dimensión** mediante **PCA por SVD** en la matriz $Z$ centrada en el tiempo, y se utiliza dicha señal como **verosimilitud analítica** para obtener un **posterior en forma cerrada** $W_{t,k}$. Luego, $X_t$ se desagrega como $X_{t,k}=W_{t,k}\,X_t$. Todo el proceso es **sin MCMC** y computacionalmente ligero.
+
+**Lo que no se identificó en la literatura.** No se encontró una metodología nombrada que: (i) parta de un **intermediario estructural incierto** $Z$, (ii) **derive una verosimilitud temporal** desde **PCA/SVD** de $Z$, y (iii) ejecute una **actualización bayesiana analítica** que produzca pesos posteriores de desagregación **estocásticos por filas** para desagregar una serie agregada distinta $X_t$. Existen tradiciones cercanas, pero cada una omite al menos uno de estos elementos:
+
+* **Balanceo biproporcional / RAS / IPF.** Ajusta matrices para casar márgenes multiplicando filas/columnas iterativamente (Deming & Stephan, 1940); **no** construye una verosimilitud desde PCA/SVD ni entrega un **posterior probabilístico en el simplex** para desagregación.
+* **Desagregación temporal** (Denton, Chow–Lin, Fernández). Distribuye agregados de baja frecuencia a alta frecuencia con series indicadoras; **no** aborda desagregación **transversal** con pesos en el simplex ni usa verosimilitudes derivadas de PCA.
+* **Reconciliación de pronósticos jerárquicos** (p. ej., MinT). Proyecta pronósticos en subespacios coherentes; enfoque de pronóstico y no una actualización bayesiana para pesos composicionales.
+
+## 9.2. Referencias
+
+Deming, W. E., & Stephan, F. F. (1940). *The Annals of Mathematical Statistics, 11*(4), 427–444. [https://doi.org/10.1214/aoms/1177731829](https://doi.org/10.1214/aoms/1177731829)
+Eurostat. (2013). *Handbook on quarterly national accounts*.
+ILO/IMF/OECD/Eurostat/UNECE/World Bank (2020). *Consumer Price Index Manual: Concepts and Methods*.
+Wickramasuriya, S. L., Athanasopoulos, G., & Hyndman, R. J. (2019). *Statistica Sinica, 30*(4), 1555–1586. (Preprint: arXiv:1805.07245).
+
+## 9.3. Aplicaciones económicas
+
+### 9.3.1. Desagregación del Índice de Precios al Consumidor
+
+La herramienta habilita análisis antes inviables: identificación de sectores impulsores de la inflación, evaluación del impacto diferencial de choques de precios y seguimiento de la dinámica sectorial de precios.
+
+## 9.4. Aplicaciones más allá de la economía
+
+El marco se generaliza a cualquier dominio con **transferencia de estructura**: neurociencia, clima (downscaling con incertidumbre), epidemiología, procesamiento de señales y aprendizaje automático (adaptación de dominio con representaciones intermedias ruidosas).
+
+## 9.5. Impacto práctico
+
+Posibilita que bancos centrales, investigadores y analistas descompongan choques agregados en componentes sectoriales y diseñen intervenciones basadas en dinámica granular de precios.

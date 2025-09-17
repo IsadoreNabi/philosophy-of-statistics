@@ -420,6 +420,367 @@ font-style: inherit;">$</span>metrics</span></code></pre></div></div>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>
 <item>
+  <title>DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-desagregacion-bayesiana/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<blockquote class="blockquote">
+<p>Se presenta un marco práctico para la desagregación sectorial de índices agregados (p.&nbsp;ej., IPC) mediante actualizaciones deterministas del posterior y diagnósticos explícitos. La implementación corresponde al paquete <code>BayesianDisaggregation</code> de R y prioriza la coherencia con una verosimilitud sectorial, la estabilidad numérica/temporal y la interpretabilidad.</p>
+</blockquote>
+<section id="planteamiento-del-problema" class="level2">
+<h2 class="anchored" data-anchor-id="planteamiento-del-problema">1. Planteamiento del problema</h2>
+<p>Sea un índice agregado observado en periodos <img src="https://latex.codecogs.com/png.latex?t%20=%201,%5Cdots,T">. El objetivo es una descomposición sectorial en <img src="https://latex.codecogs.com/png.latex?K"> componentes cuyas proporciones yacen en el simplex unitario, con filas que suman uno. El flujo parte de una matriz de pesos previa <img src="https://latex.codecogs.com/png.latex?P%20%5Cin%20%5Cmathbb%7BR%7D%5E%7BT%20%5Ctimes%20K%7D"> (estocástica por filas), construye un vector de verosimilitud sectorial <img src="https://latex.codecogs.com/png.latex?L%20%5Cin%20%5CDelta%5E%7BK-1%7D">, lo propaga en el tiempo hacia <img src="https://latex.codecogs.com/png.latex?L_T%20%5Cin%20%5Cmathbb%7BR%7D%5E%7BT%20%5Ctimes%20K%7D"> y aplica una actualización determinista para obtener el posterior <img src="https://latex.codecogs.com/png.latex?W"> (también estocástico por filas).</p>
+</section>
+<section id="construcción-de-la-verosimilitud-sectorial-l" class="level2">
+<h2 class="anchored" data-anchor-id="construcción-de-la-verosimilitud-sectorial-l">2. Construcción de la verosimilitud sectorial <img src="https://latex.codecogs.com/png.latex?L"></h2>
+<p><strong>Saliencia de la PC1.</strong> Se centran en el tiempo las columnas de <img src="https://latex.codecogs.com/png.latex?P">; se calcula SVD/PCA sobre la matriz centrada. Las entradas absolutas del primer vector singular derecho se normalizan para obtener un <img src="https://latex.codecogs.com/png.latex?L"> no negativo. Cuando la PC1 es degenerada, se recurre a un respaldo basado en medias de columna (renormalizadas). Se registran como atributos las cargas, la varianza explicada y un indicador del respaldo.</p>
+<p><strong>Propagación temporal.</strong> Un perfil no negativo <img src="https://latex.codecogs.com/png.latex?w_t"> expande <img src="https://latex.codecogs.com/png.latex?L"> hacia <img src="https://latex.codecogs.com/png.latex?L_T"> mediante normalización por filas. Existen patrones incorporados como <code>constant</code>, <code>recent</code> (creciente en <img src="https://latex.codecogs.com/png.latex?t">), <code>linear</code> y <code>bell</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># From the package:</span></span>
+<span id="cb1-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># L  &lt;- compute_L_from_P(P)</span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># LT &lt;- spread_likelihood(L, T_periods = nrow(P), pattern = "recent")</span></span></code></pre></div></div>
+</section>
+<section id="actualizaciones-deterministas-del-posterior-sin-mcmc" class="level2">
+<h2 class="anchored" data-anchor-id="actualizaciones-deterministas-del-posterior-sin-mcmc">2. Actualizaciones deterministas del posterior (sin MCMC)</h2>
+<p>Se ofrecen cuatro opciones:</p>
+<ul>
+<li><strong>Promedio ponderado:</strong> <img src="https://latex.codecogs.com/png.latex?W%20=%20%5Cmathrm%7Bnorm1%7D%5C%7B%5Clambda%20P%20+%20(1-%5Clambda)%20L_T%5C%7D">.</li>
+<li><strong>Multiplicativa:</strong> <img src="https://latex.codecogs.com/png.latex?W%20=%20%5Cmathrm%7Bnorm1%7D%5C%7BP%20%5Codot%20L_T%5C%7D">.</li>
+<li><strong>Media Dirichlet:</strong> conjugación analítica con <img src="https://latex.codecogs.com/png.latex?%5Cgamma%3E0">; <img src="https://latex.codecogs.com/png.latex?%5Cgamma"> menor agudiza la media posterior.</li>
+<li><strong>Mezcla adaptativa:</strong> la mezcla por sector escala con la volatilidad previa.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_weighted(P, LT, lambda = 0.7)</span></span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_multiplicative(P, LT)</span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_dirichlet(P, LT, gamma = 0.1)</span></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_adaptive(P, LT)</span></span></code></pre></div></div>
+<p>Todas las actualizaciones preservan la suma-unidad por fila por construcción.</p>
+</section>
+<section id="diagnósticos-coherencia-estabilidad-interpretabilidad" class="level2">
+<h2 class="anchored" data-anchor-id="diagnósticos-coherencia-estabilidad-interpretabilidad">3. Diagnósticos: coherencia, estabilidad, interpretabilidad</h2>
+<ul>
+<li><strong>Coherencia:</strong> ganancia de correlación de la media temporal posterior <img src="https://latex.codecogs.com/png.latex?%5Cbar%7Bw%7D"> frente a la previa <img src="https://latex.codecogs.com/png.latex?%5Cbar%7Bp%7D"> con respecto a <img src="https://latex.codecogs.com/png.latex?L">, acotada en <img src="https://latex.codecogs.com/png.latex?%5B0,1%5D"> mediante un reescalamiento lineal.</li>
+<li><strong>Estabilidad numérica y temporal:</strong> penalización exponencial por desviaciones de suma de fila/negativos más una medida de suavidad basada en diferencias absolutas promedio en el tiempo; se combinan en una puntuación compuesta.</li>
+<li><strong>Interpretabilidad:</strong> preservación de la estructura sectorial <img src="https://latex.codecogs.com/png.latex?%5Cmathrm%7Bcorr%7D(%5Cbar%7Bp%7D,%5Cbar%7Bw%7D)"> y plausibilidad de los cambios relativos medios (percentil 90).</li>
+</ul>
+<p>Las funciones expuestas incluyen <code>coherence_score()</code>, <code>numerical_stability_exp()</code>, <code>temporal_stability()</code>, <code>stability_composite()</code> e <code>interpretability_score()</code>.</p>
+</section>
+<section id="api-end-to-end" class="level2">
+<h2 class="anchored" data-anchor-id="api-end-to-end">4. API end-to-end</h2>
+<p>Un envoltorio organiza E/S, construcción de <img src="https://latex.codecogs.com/png.latex?L">, posterior, métricas y exportaciones.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># bayesian_disaggregate(</span></span>
+<span id="cb3-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   path_cpi, path_weights,</span></span>
+<span id="cb3-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   method = c("weighted","multiplicative","dirichlet","adaptive"),</span></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   lambda = 0.7, gamma = 0.1,</span></span>
+<span id="cb3-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   coh_mult = 3.0, coh_const = 0.5,</span></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   stab_a = 1000, stab_b = 10, stab_kappa = 50,</span></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   likelihood_pattern = "recent"</span></span>
+<span id="cb3-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+<p>La salida incluye <img src="https://latex.codecogs.com/png.latex?W"> en formato “tidy”, diagnósticos, exportaciones opcionales a Excel y gráficos rápidos.</p>
+</section>
+<section id="demostración-sintética-y-reproducible" class="level2">
+<h2 class="anchored" data-anchor-id="demostración-sintética-y-reproducible">5. Demostración sintética y reproducible</h2>
+<p>El siguiente bloque sintetiza un previo pequeño, deriva <img src="https://latex.codecogs.com/png.latex?L"> y <img src="https://latex.codecogs.com/png.latex?L_T">, compara posteriores y calcula métricas clave. Renderiza con rapidez en equipos típicos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">123</span>)</span>
+<span id="cb4-2">T <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>; K <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span></span>
+<span id="cb4-3">P <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">matrix</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rexp</span>(T<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>K), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">nrow =</span> T); P <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> P <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rowSums</span>(P)</span>
+<span id="cb4-4"></span>
+<span id="cb4-5">L  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">compute_L_from_P</span>(P)                       <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># PCA/SVD con respaldo robusto</span></span>
+<span id="cb4-6">LT <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">spread_likelihood</span>(L, T, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pattern =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"recent"</span>)</span>
+<span id="cb4-7"></span>
+<span id="cb4-8">W_adapt <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">posterior_adaptive</span>(P, LT)            <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># recomendado con volatilidades sectoriales heterogéneas</span></span>
+<span id="cb4-9">coh  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">coherence_score</span>(P, W_adapt, L)</span>
+<span id="cb4-10">stab <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">stability_composite</span>(W_adapt, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">a =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">b =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">kappa =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>)</span>
+<span id="cb4-11">intr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">interpretability_score</span>(P, W_adapt)</span>
+<span id="cb4-12"></span>
+<span id="cb4-13">eff  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.65</span></span>
+<span id="cb4-14">comp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.30</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>coh <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>stab <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>intr <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.20</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>eff</span>
+<span id="cb4-15"></span>
+<span id="cb4-16"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">round</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coherence=</span>coh, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stability=</span>stab, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">interpretability=</span>intr,</span>
+<span id="cb4-17">                 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">efficiency=</span>eff, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">composite=</span>comp), <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>)</span></code></pre></div></div>
+</div>
+<p>La demostración replica el ejemplo rápido del manual y sus rangos objetivo.</p>
+</section>
+<section id="flujo-con-datos-reales-desactivado-por-velocidad" class="level2">
+<h2 class="anchored" data-anchor-id="flujo-con-datos-reales-desactivado-por-velocidad">6. Flujo con datos reales (desactivado por velocidad)</h2>
+<p>Activar <code>eval: true</code> tras definir rutas a archivos locales de Excel. Se ejecuta una cuadrícula compacta, se re-ejecuta la mejor configuración y se escribe un único Excel con todos los artefactos.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Rutas de ejemplo (Windows: usar barras normales o cadenas crudas)</span></span>
+<span id="cb5-2">path_cpi <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"E:/Carpeta de Estudio/.../CPI.xlsx"</span></span>
+<span id="cb5-3">path_w   <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"E:/Carpeta de Estudio/.../PESOS VAB.xlsx"</span></span>
+<span id="cb5-4"></span>
+<span id="cb5-5">base_res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bayesian_disaggregate</span>(</span>
+<span id="cb5-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">path_cpi =</span> path_cpi, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">path_weights =</span> path_w,</span>
+<span id="cb5-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">method =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"adaptive"</span>,</span>
+<span id="cb5-8">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lambda =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.7</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">gamma =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>,</span>
+<span id="cb5-9">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coh_mult =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3.0</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coh_const =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span>,</span>
+<span id="cb5-10">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_a =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_b =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_kappa =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">60</span>,</span>
+<span id="cb5-11">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">likelihood_pattern =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"recent"</span></span>
+<span id="cb5-12">)</span>
+<span id="cb5-13"></span>
+<span id="cb5-14">base_res<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>metrics</span></code></pre></div></div>
+</div>
+<p>Puede añadirse una búsqueda en rejilla mínima y la exportación a Excel en un solo archivo siguiendo los auxiliares del paquete.</p>
+</section>
+<section id="lectura-de-los-gráficos" class="level2">
+<h2 class="anchored" data-anchor-id="lectura-de-los-gráficos">7. Lectura de los gráficos</h2>
+<p>El mapa de calor del posterior muestra persistencia y suavidad sectorial en el tiempo; las líneas de sectores dominantes enfatizan componentes principales; la hoja “sectoral-CPI” presenta <img src="https://latex.codecogs.com/png.latex?%5Chat%7BY%7D_%7Bt,k%7D%20=%20%5Cmathrm%7BCPI%7D_t%20%5Ctimes%20W_%7Bt,k%7D">, permitiendo una vista desagregada de la serie agregada.</p>
+</section>
+<section id="parámetros-prácticos-por-defecto" class="level2">
+<h2 class="anchored" data-anchor-id="parámetros-prácticos-por-defecto">8. Parámetros prácticos por defecto</h2>
+<p>La mezcla adaptativa es robusta con volatilidad previa heterogénea; en caso contrario, la regla ponderada con <img src="https://latex.codecogs.com/png.latex?%5Clambda%20%5Cin%20%5B0.7,%200.9%5D"> suele funcionar bien. El escalado de coherencia <img src="https://latex.codecogs.com/png.latex?(%5Ctexttt%7Bmult%7D=3.0,%5C%20%5Ctexttt%7Bconst%7D=0.5)"> produce una puntuación 0–1 interpretable. La penalización numérica exponencial es deliberadamente estricta para hacer cumplir estocasticidad por filas en ejecuciones automáticas.</p>
+</section>
+<section id="innovación-clave" class="level2">
+<h2 class="anchored" data-anchor-id="innovación-clave">9. Innovación clave</h2>
+<p>Se aporta, hasta donde se tiene conocimiento, una solución analítica al problema de <strong>transferencia de estructura con intermediario incierto</strong>: la PCA sobre pesos de desagregación centrados en el tiempo provee la señal de verosimilitud para una actualización bayesiana cerrada en el simplex, habilitando la desagregación sectorial inmediata de una serie agregada no relacionada.</p>
+</section>
+<section id="métodos-relacionados-y-posicionamiento" class="level2">
+<h2 class="anchored" data-anchor-id="métodos-relacionados-y-posicionamiento">9.1. Métodos relacionados y posicionamiento</h2>
+<p><strong>Problema.</strong> Con frecuencia se requiere comparar una serie <strong>agregada</strong> <img src="https://latex.codecogs.com/png.latex?X_t"> (p.&nbsp;ej., IPC) con una serie <strong>desagregada</strong> <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,k%7D"> en sectores <img src="https://latex.codecogs.com/png.latex?k">, contando solo con un <strong>intermediario imperfecto</strong> <img src="https://latex.codecogs.com/png.latex?Z_%7Bt,k%7D"> que aproxima la estructura transversal (p.&nbsp;ej., valor agregado sectorial). El reto conceptual consiste en <strong>transferir estructura</strong> desde <img src="https://latex.codecogs.com/png.latex?Z"> para desagregar <img src="https://latex.codecogs.com/png.latex?X">, <strong>reconociendo la incertidumbre</strong> de <img src="https://latex.codecogs.com/png.latex?Z">.</p>
+<p><strong>Aporte del paquete.</strong> <img src="https://latex.codecogs.com/png.latex?Z"> se trata como <strong>previo bayesiano</strong> sobre pesos sectoriales <img src="https://latex.codecogs.com/png.latex?P_%7Bt,k%7D"> (filas en el simplex); se extrae una <strong>señal temporal de baja dimensión</strong> mediante <strong>PCA por SVD</strong> en la matriz <img src="https://latex.codecogs.com/png.latex?Z"> centrada en el tiempo, y se utiliza dicha señal como <strong>verosimilitud analítica</strong> para obtener un <strong>posterior en forma cerrada</strong> <img src="https://latex.codecogs.com/png.latex?W_%7Bt,k%7D">. Luego, <img src="https://latex.codecogs.com/png.latex?X_t"> se desagrega como <img src="https://latex.codecogs.com/png.latex?X_%7Bt,k%7D=W_%7Bt,k%7D%5C,X_t">. Todo el proceso es <strong>sin MCMC</strong> y computacionalmente ligero.</p>
+<p><strong>Lo que no se identificó en la literatura.</strong> No se encontró una metodología nombrada que: (i) parta de un <strong>intermediario estructural incierto</strong> <img src="https://latex.codecogs.com/png.latex?Z">, (ii) <strong>derive una verosimilitud temporal</strong> desde <strong>PCA/SVD</strong> de <img src="https://latex.codecogs.com/png.latex?Z">, y (iii) ejecute una <strong>actualización bayesiana analítica</strong> que produzca pesos posteriores de desagregación <strong>estocásticos por filas</strong> para desagregar una serie agregada distinta <img src="https://latex.codecogs.com/png.latex?X_t">. Existen tradiciones cercanas, pero cada una omite al menos uno de estos elementos:</p>
+<ul>
+<li><strong>Balanceo biproporcional / RAS / IPF.</strong> Ajusta matrices para casar márgenes multiplicando filas/columnas iterativamente (Deming &amp; Stephan, 1940); <strong>no</strong> construye una verosimilitud desde PCA/SVD ni entrega un <strong>posterior probabilístico en el simplex</strong> para desagregación.</li>
+<li><strong>Desagregación temporal</strong> (Denton, Chow–Lin, Fernández). Distribuye agregados de baja frecuencia a alta frecuencia con series indicadoras; <strong>no</strong> aborda desagregación <strong>transversal</strong> con pesos en el simplex ni usa verosimilitudes derivadas de PCA.</li>
+<li><strong>Reconciliación de pronósticos jerárquicos</strong> (p.&nbsp;ej., MinT). Proyecta pronósticos en subespacios coherentes; enfoque de pronóstico y no una actualización bayesiana para pesos composicionales.</li>
+</ul>
+</section>
+<section id="referencias" class="level2">
+<h2 class="anchored" data-anchor-id="referencias">9.2. Referencias</h2>
+<p>Deming, W. E., &amp; Stephan, F. F. (1940). <em>The Annals of Mathematical Statistics, 11</em>(4), 427–444. <a href="https://doi.org/10.1214/aoms/1177731829">https://doi.org/10.1214/aoms/1177731829</a> Eurostat. (2013). <em>Handbook on quarterly national accounts</em>. ILO/IMF/OECD/Eurostat/UNECE/World Bank (2020). <em>Consumer Price Index Manual: Concepts and Methods</em>. Wickramasuriya, S. L., Athanasopoulos, G., &amp; Hyndman, R. J. (2019). <em>Statistica Sinica, 30</em>(4), 1555–1586. (Preprint: arXiv:1805.07245).</p>
+</section>
+<section id="aplicaciones-económicas" class="level2">
+<h2 class="anchored" data-anchor-id="aplicaciones-económicas">9.3. Aplicaciones económicas</h2>
+<section id="desagregación-del-índice-de-precios-al-consumidor" class="level3">
+<h3 class="anchored" data-anchor-id="desagregación-del-índice-de-precios-al-consumidor">9.3.1. Desagregación del Índice de Precios al Consumidor</h3>
+<p>La herramienta habilita análisis antes inviables: identificación de sectores impulsores de la inflación, evaluación del impacto diferencial de choques de precios y seguimiento de la dinámica sectorial de precios.</p>
+</section>
+</section>
+<section id="aplicaciones-más-allá-de-la-economía" class="level2">
+<h2 class="anchored" data-anchor-id="aplicaciones-más-allá-de-la-economía">9.4. Aplicaciones más allá de la economía</h2>
+<p>El marco se generaliza a cualquier dominio con <strong>transferencia de estructura</strong>: neurociencia, clima (downscaling con incertidumbre), epidemiología, procesamiento de señales y aprendizaje automático (adaptación de dominio con representaciones intermedias ruidosas).</p>
+</section>
+<section id="impacto-práctico" class="level2">
+<h2 class="anchored" data-anchor-id="impacto-práctico">9.5. Impacto práctico</h2>
+<p>Posibilita que bancos centrales, investigadores y analistas descompongan choques agregados en componentes sectoriales y diseñen intervenciones basadas en dinámica granular de precios.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>packages</category>
+  <category>Bayesian</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-desagregacion-bayesiana/</guid>
+  <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+<item>
   <title>Welcome To My Blog</title>
   <dc:creator>José Mauricio Gómez Julián</dc:creator>
   <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/welcome/</link>
