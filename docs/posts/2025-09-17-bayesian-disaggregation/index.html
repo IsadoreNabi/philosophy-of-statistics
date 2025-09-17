@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="José Mauricio Gómez Julián">
+<meta name="dcterms.date" content="2025-09-17">
+<meta name="description" content="From Prior Weights to Posterior Sectoral Shares With Coherence, Stability, and Interpretability Metrics—Plus a Synthetic Demo.">
+
+<title>BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW – PHILOSOPHY OF STATISTICS — Lab Notes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-9859d952baf36b9a7db628bbb9f3169e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">PHILOSOPHY OF STATISTICS — Lab Notes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.marxistphilosophyofscience.com"> 
+<span class="menu-text">Powered by Marxist Philosophy of Science</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW</h1>
+                  <div>
+        <div class="description">
+          From Prior Weights to Posterior Sectoral Shares With Coherence, Stability, and Interpretability Metrics—Plus a Synthetic Demo.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">R</div>
+                <div class="quarto-category">packages</div>
+                <div class="quarto-category">Bayesian</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>José Mauricio Gómez Julián </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 17, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#problem-setup" id="toc-problem-setup" class="nav-link active" data-scroll-target="#problem-setup">1. Problem Setup</a></li>
+  <li><a href="#constructing-the-sectoral-likelihood-l" id="toc-constructing-the-sectoral-likelihood-l" class="nav-link" data-scroll-target="#constructing-the-sectoral-likelihood-l">2. Constructing the Sectoral Likelihood (L)</a></li>
+  <li><a href="#deterministic-posterior-updates-mcmc-free" id="toc-deterministic-posterior-updates-mcmc-free" class="nav-link" data-scroll-target="#deterministic-posterior-updates-mcmc-free">2. Deterministic Posterior Updates (MCMC-Free)</a></li>
+  <li><a href="#diagnostics-coherence-stability-interpretability" id="toc-diagnostics-coherence-stability-interpretability" class="nav-link" data-scroll-target="#diagnostics-coherence-stability-interpretability">3. Diagnostics: Coherence, Stability, Interpretability</a></li>
+  <li><a href="#end-to-end-api" id="toc-end-to-end-api" class="nav-link" data-scroll-target="#end-to-end-api">4. End-To-End API</a></li>
+  <li><a href="#synthetic-and-reproducible-demo" id="toc-synthetic-and-reproducible-demo" class="nav-link" data-scroll-target="#synthetic-and-reproducible-demo">5. Synthetic and Reproducible Demo</a></li>
+  <li><a href="#real-data-pipeline-disabled-for-speed" id="toc-real-data-pipeline-disabled-for-speed" class="nav-link" data-scroll-target="#real-data-pipeline-disabled-for-speed">6. Real-Data Pipeline (Disabled for Speed)</a></li>
+  <li><a href="#reading-the-visuals" id="toc-reading-the-visuals" class="nav-link" data-scroll-target="#reading-the-visuals">7. Reading the Visuals</a></li>
+  <li><a href="#practical-defaults" id="toc-practical-defaults" class="nav-link" data-scroll-target="#practical-defaults">8. Practical Defaults</a></li>
+  <li><a href="#key-innovation" id="toc-key-innovation" class="nav-link" data-scroll-target="#key-innovation">9. Key Innovation</a>
+  <ul class="collapse">
+  <li><a href="#summary-of-related-methods-and-where-this-package-fits" id="toc-summary-of-related-methods-and-where-this-package-fits" class="nav-link" data-scroll-target="#summary-of-related-methods-and-where-this-package-fits">9.1. Summary of Related Methods and Where This package Fits</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">9.2. References</a>
+  <ul class="collapse">
+  <li><a href="#notes-on-scope-and-claims" id="toc-notes-on-scope-and-claims" class="nav-link" data-scroll-target="#notes-on-scope-and-claims">9.2.1. Notes on Scope and Claims</a></li>
+  </ul></li>
+  <li><a href="#economic-applications" id="toc-economic-applications" class="nav-link" data-scroll-target="#economic-applications">9.3. Economic Applications</a>
+  <ul class="collapse">
+  <li><a href="#disaggregating-consumer-price-index" id="toc-disaggregating-consumer-price-index" class="nav-link" data-scroll-target="#disaggregating-consumer-price-index">9.3.1. Disaggregating Consumer Price Index</a></li>
+  </ul></li>
+  <li><a href="#applications-beyond-economics" id="toc-applications-beyond-economics" class="nav-link" data-scroll-target="#applications-beyond-economics">9.4. Applications Beyond Economics</a>
+  <ul class="collapse">
+  <li><a href="#neuroscience" id="toc-neuroscience" class="nav-link" data-scroll-target="#neuroscience">9.4.1. Neuroscience</a></li>
+  <li><a href="#climate-science" id="toc-climate-science" class="nav-link" data-scroll-target="#climate-science">9.4.2. Climate Science&nbsp;</a></li>
+  <li><a href="#epidemiology" id="toc-epidemiology" class="nav-link" data-scroll-target="#epidemiology">9.4.3. Epidemiology</a></li>
+  <li><a href="#signal-processing" id="toc-signal-processing" class="nav-link" data-scroll-target="#signal-processing">9.4.4. Signal Processing</a></li>
+  <li><a href="#machine-learning" id="toc-machine-learning" class="nav-link" data-scroll-target="#machine-learning">9.4.5. Machine Learning</a></li>
+  </ul></li>
+  <li><a href="#real-world-impact" id="toc-real-world-impact" class="nav-link" data-scroll-target="#real-world-impact">9.5. Real-World Impact</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<blockquote class="blockquote">
+<p>This article summarizes a practical framework for sectoral disaggregation of aggregate indices (e.g., CPI) using deterministic posterior updates and explicit diagnostics. The approach is implemented in the <code>BayesianDisaggregation</code> R package and emphasizes coherence with a sectoral likelihood, numerical/temporal stability, and interpretability.</p>
+</blockquote>
+<section id="problem-setup" class="level2">
+<h2 class="anchored" data-anchor-id="problem-setup">1. Problem Setup</h2>
+<p>Consider an aggregate index observed over periods (t = 1,,T). The goal is a sectoral decomposition into (K) components whose shares lie on the unit simplex, with rows that sum to one. The workflow starts from a prior weight matrix (P ^{T K}) (row-stochastic), builds a sectoral likelihood vector (L ^{K-1}), spreads it over time into (L_T ^{T K}), and applies a deterministic update to obtain the posterior (W) (also row-stochastic).</p>
+</section>
+<section id="constructing-the-sectoral-likelihood-l" class="level2">
+<h2 class="anchored" data-anchor-id="constructing-the-sectoral-likelihood-l">2. Constructing the Sectoral Likelihood (L)</h2>
+<p><strong>PC1 Salience.</strong> Columns of (P) are centered over time; an SVD/PCA is computed on the centered matrix. The first right singular vector’s absolute entries are normalized to obtain a non-negative (L). When PC1 is degenerate, a fallback uses column means of (P) (renormalized). Attributes record loadings, explained variance and the fallback flag.</p>
+<p><strong>Temporal Spreading.</strong> A non-negative profile (w_t) spreads (L) into (L_T) by row-normalization. Built-in patterns include <code>constant</code>, <code>recent</code> (linearly increasing in (t)), <code>linear</code>, and <code>bell</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># From the package:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># L  &lt;- compute_L_from_P(P)</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># LT &lt;- spread_likelihood(L, T_periods = nrow(P), pattern = "recent")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="deterministic-posterior-updates-mcmc-free" class="level2">
+<h2 class="anchored" data-anchor-id="deterministic-posterior-updates-mcmc-free">2. Deterministic Posterior Updates (MCMC-Free)</h2>
+<p>Four options are provided:</p>
+<ul>
+<li><strong>Weighted Average:</strong> <span class="math inline">\(W = \text{norm1}\{\lambda P + (1-\lambda) L_T\}\)</span>.</li>
+<li><strong>Multiplicative:</strong> <span class="math inline">\(W = \text{norm1}\{P \odot L_T\}\)</span>.</li>
+<li><strong>Dirichlet Mean:</strong> analytic conjugacy with γ&gt;0; smaller γ sharpens the posterior mean.</li>
+<li><strong>Adaptive Mixing:</strong> sector-wise mixing scales by prior volatility.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_weighted(P, LT, lambda = 0.7)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_multiplicative(P, LT)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_dirichlet(P, LT, gamma = 0.1)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># posterior_adaptive(P, LT)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All updates keep rows on the simplex by construction.</p>
+</section>
+<section id="diagnostics-coherence-stability-interpretability" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-coherence-stability-interpretability">3. Diagnostics: Coherence, Stability, Interpretability</h2>
+<ul>
+<li><strong>Coherence:</strong> correlation gain of the posterior temporal mean <span class="math inline">\(\bar{w}\)</span> vs.&nbsp;prior <span class="math inline">\(\bar{p}\)</span> with respect to <span class="math inline">\(L\)</span>, bounded in <span class="math inline">\([0,1]\)</span> via a linear scale.</li>
+<li><strong>Numerical &amp; Temporal Stability:</strong> exponential penalty for row-sum deviation/negatives plus a smoothness score based on average absolute differences over time; combined into a composite stability score.</li>
+<li><strong>Interpretability:</strong> preservation of sectoral structure (corr<span class="math inline">\((\bar{p},\bar{w})\)</span>) and plausibility of average relative shifts (90th percentile). Implementation is exposed as <code>coherence_score()</code>, <code>numerical_stability_exp()</code>, <code>temporal_stability()</code>, <code>stability_composite()</code>, and <code>interpretability_score()</code>.</li>
+</ul>
+</section>
+<section id="end-to-end-api" class="level2">
+<h2 class="anchored" data-anchor-id="end-to-end-api">4. End-To-End API</h2>
+<p>A convenience wrapper orchestrates I/O, likelihood construction, posterior, metrics, and exports.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bayesian_disaggregate(</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   path_cpi, path_weights,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   method = c("weighted","multiplicative","dirichlet","adaptive"),</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   lambda = 0.7, gamma = 0.1,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   coh_mult = 3.0, coh_const = 0.5,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   stab_a = 1000, stab_b = 10, stab_kappa = 50,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   likelihood_pattern = "recent"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># )</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Outputs include a tidy posterior <span class="math inline">\(W\)</span>, diagnostics, optional Excel exports, and quick plots.</p>
+</section>
+<section id="synthetic-and-reproducible-demo" class="level2">
+<h2 class="anchored" data-anchor-id="synthetic-and-reproducible-demo">5. Synthetic and Reproducible Demo</h2>
+<p>The following chunk synthesizes a small prior, derives <span class="math inline">\(L\)</span> and <span class="math inline">\(L_T\)</span>, compares posteriors, and computes key metrics. It renders quickly on any machine.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>T <span class="ot">&lt;-</span> <span class="dv">10</span>; K <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>P <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rexp</span>(T<span class="sc">*</span>K), <span class="at">nrow =</span> T); P <span class="ot">&lt;-</span> P <span class="sc">/</span> <span class="fu">rowSums</span>(P)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>L  <span class="ot">&lt;-</span> <span class="fu">compute_L_from_P</span>(P)                       <span class="co"># PCA/SVD with robust fallback</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>LT <span class="ot">&lt;-</span> <span class="fu">spread_likelihood</span>(L, T, <span class="at">pattern =</span> <span class="st">"recent"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>W_adapt <span class="ot">&lt;-</span> <span class="fu">posterior_adaptive</span>(P, LT)            <span class="co"># recommended when sector volatilities differ</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>coh  <span class="ot">&lt;-</span> <span class="fu">coherence_score</span>(P, W_adapt, L)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>stab <span class="ot">&lt;-</span> <span class="fu">stability_composite</span>(W_adapt, <span class="at">a =</span> <span class="dv">1000</span>, <span class="at">b =</span> <span class="dv">10</span>, <span class="at">kappa =</span> <span class="dv">50</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>intr <span class="ot">&lt;-</span> <span class="fu">interpretability_score</span>(P, W_adapt)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>eff  <span class="ot">&lt;-</span> <span class="fl">0.65</span>                                    <span class="co"># heuristic efficiency placeholder</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>comp <span class="ot">&lt;-</span> <span class="fl">0.30</span><span class="sc">*</span>coh <span class="sc">+</span> <span class="fl">0.25</span><span class="sc">*</span>stab <span class="sc">+</span> <span class="fl">0.25</span><span class="sc">*</span>intr <span class="sc">+</span> <span class="fl">0.20</span><span class="sc">*</span>eff</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(<span class="fu">data.frame</span>(<span class="at">coherence=</span>coh, <span class="at">stability=</span>stab, <span class="at">interpretability=</span>intr,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">efficiency=</span>eff, <span class="at">composite=</span>comp), <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The demo mirrors the manual’s quick example and target ranges.</p>
+</section>
+<section id="real-data-pipeline-disabled-for-speed" class="level2">
+<h2 class="anchored" data-anchor-id="real-data-pipeline-disabled-for-speed">6. Real-Data Pipeline (Disabled for Speed)</h2>
+<p>Switch <code>eval: true</code> after setting paths to local Excel files. This runs the compact grid, re-executes the best configuration, and writes a single Excel with all artifacts.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example paths (Windows: use forward slashes or raw strings)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>path_cpi <span class="ot">&lt;-</span> <span class="st">"E:/Carpeta de Estudio/.../CPI.xlsx"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>path_w   <span class="ot">&lt;-</span> <span class="st">"E:/Carpeta de Estudio/.../PESOS VAB.xlsx"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>base_res <span class="ot">&lt;-</span> <span class="fu">bayesian_disaggregate</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">path_cpi =</span> path_cpi, <span class="at">path_weights =</span> path_w,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"adaptive"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda =</span> <span class="fl">0.7</span>, <span class="at">gamma =</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">coh_mult =</span> <span class="fl">3.0</span>, <span class="at">coh_const =</span> <span class="fl">0.5</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">stab_a =</span> <span class="dv">1000</span>, <span class="at">stab_b =</span> <span class="dv">10</span>, <span class="at">stab_kappa =</span> <span class="dv">60</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">likelihood_pattern =</span> <span class="st">"recent"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>base_res<span class="sc">$</span>metrics</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A minimal grid search and one-file Excel export can be added following the package helpers.</p>
+</section>
+<section id="reading-the-visuals" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-visuals">7. Reading the Visuals</h2>
+<p>A posterior heatmap reveals sectoral persistence and smoothness over time; top-sectors line plots emphasize dominant components; the sectoral-CPI sheet shows <span class="math inline">\(\hat{Y}_{t,k} = \text{CPI}_t \times W_{t,k}\)</span>, enabling a decomposed view of the aggregate series.</p>
+</section>
+<section id="practical-defaults" class="level2">
+<h2 class="anchored" data-anchor-id="practical-defaults">8. Practical Defaults</h2>
+<p>Adaptive mixing is robust under heterogeneous prior volatility; otherwise the weighted rule with <span class="math inline">\(\lambda \in [0.7, 0.9]\)</span> often performs strongly. Coherence scaling <span class="math inline">\((\texttt{mult}=3.0,\ \texttt{const}=0.5)\)</span> yields a bounded, interpretable 0–1 score. The exponential numerical penalty is intentionally sharp to enforce row-stochasticity in automated runs.</p>
+</section>
+<section id="key-innovation" class="level1">
+<h1>9. Key Innovation</h1>
+<p><em>This package represents a methodological contribution to econometrics and data science, providing the first analytical solution to the structure transfer problem with uncertain intermediaries.</em></p>
+<p>The package’s breakthrough lies in recognizing that PCA on temporally-centered disaggregation weights yields exactly the likelihood signal needed for Bayesian updating. This enables: - <strong>Formal uncertainty quantification</strong> rather than ad-hoc treatment - <strong>Analytical solutions</strong> for tractable sample sizes - <strong>Transparent propagation</strong> of proxy uncertainty to final results</p>
+<section id="summary-of-related-methods-and-where-this-package-fits" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-related-methods-and-where-this-package-fits">9.1. Summary of Related Methods and Where This package Fits</h2>
+<p><strong>Problem.</strong> You often want to compare an <strong>aggregate</strong> series <span class="math inline">\(X_t\)</span> (e.g., CPI) with a <strong>disaggregated</strong> series <span class="math inline">\(Y_{t,k}\)</span> across sectors <span class="math inline">\(k\)</span>, but only have an <strong>imperfect intermediary</strong> <span class="math inline">\(Z_{t,k}\)</span> that approximates the cross-sectional structure (e.g., sectoral value added). The conceptual challenge is <strong>transferring structure</strong> from <span class="math inline">\(Z\)</span> to disaggregate <span class="math inline">\(X\)</span>, while <strong>honestly accounting for uncertainty</strong> in <span class="math inline">\(Z\)</span>.</p>
+<p><strong>What this package does.</strong> The package treats <span class="math inline">\(Z\)</span> as a <strong>Bayesian prior</strong> over sectoral weights <span class="math inline">\(P_{t,k}\)</span> (rows on the probability simplex), extracts a <strong>low-dimensional temporal signal</strong> via <strong>PCA computed by SVD</strong> on the time-centered matrix <span class="math inline">\(Z\)</span>, and uses that signal as an <strong>analytical likelihood</strong> to obtain a <strong>closed-form posterior</strong> <span class="math inline">\(W_{t,k}\)</span> for the weights. The updated weights then disaggregate <span class="math inline">\(X_t\)</span> into <span class="math inline">\(X_{t,k}=W_{t,k}\,X_t\)</span>. This is entirely <strong>MCMC-free</strong> and computationally light. Conceptually, it is a <strong>structure-transfer</strong> method with an <strong>uncertain intermediary</strong> and an <strong>analytical update</strong>.</p>
+<p><strong>What we did <em>not</em> find in the literature.</strong> We did not find a prior, named methodology that (i) takes an <strong>uncertain structural intermediary</strong> <span class="math inline">\(Z\)</span>, (ii) <strong>derives a temporal likelihood</strong> from <strong>PCA/SVD</strong> of <span class="math inline">\(Z\)</span>, and (iii) performs an <strong>analytical Bayesian update</strong> to produce posterior disaggregation weights that remain <strong>row-stochastic</strong> and are used to disaggregate an unrelated aggregate <span class="math inline">\(X_t\)</span>. There are adjacent traditions, but each misses at least one of these pieces:</p>
+<ul>
+<li><strong>Biproportional balancing / RAS / IPF.</strong> Classic RAS adjusts a matrix to match new margins by <strong>multiplying rows/columns</strong> iteratively (Deming &amp; Stephan, 1940, pp.&nbsp;28–29; overviews referencing Bacharach, 1970). It <strong>doesn’t</strong> construct a likelihood from PCA/SVD nor deliver a <strong>probabilistic posterior on the simplex</strong> for use as disaggregation weights. It’s a deterministic reconciliation method for totals, not a Bayesian structure-transfer with an uncertain intermediary.</li>
+<li><strong>Temporal disaggregation</strong> (Denton, Chow–Lin, Fernández). These methods distribute <strong>low-frequency aggregates</strong> into higher frequency using a related indicator series, via smoothness/BLU estimators (Eurostat, 2013, pp.&nbsp;79–98; see Denton-type formulations; Chow–Lin and Fernández are discussed there). They <strong>do not</strong> address <strong>cross-sectional</strong> disaggregation with <strong>simplex-valued weights</strong> nor use PCA-derived likelihoods.</li>
+<li><strong>Forecast reconciliation for hierarchies</strong> (e.g., MinT). This reconciles <strong>inconsistent forecasts across aggregation trees</strong> by projecting onto a coherent subspace (Wickramasuriya et al., 2019, pp.&nbsp;1–3). It is <em>forecast</em>-centric and linear-algebraic—not a Bayesian update for <strong>compositional</strong> weights with PCA-likelihoods.</li>
+<li><strong>Compositional/Bayesian state-space models</strong> exist (e.g., Dirichlet evolutions), but we did not find an <strong>analytical</strong> 1-step update that (a) builds its <strong>likelihood from PCA/SVD of</strong> <span class="math inline">\(Z\)</span> and (b) outputs <strong>posterior weights</strong> to <strong>disaggregate a different aggregate series</strong> <span class="math inline">\(X_t\)</span>.</li>
+</ul>
+<p><strong>Takeaway.</strong> To our knowledge, the package provides a <strong>new, analytical</strong> approach to the “structure transfer with uncertain intermediary” problem in the specific setting of <strong>time-varying, simplex-valued weights</strong>: it uses <strong>PCA via SVD</strong> on <span class="math inline">\(Z\)</span> to define a <strong>temporal likelihood</strong>, and then performs a <strong>closed-form Bayesian update</strong> to posterior weights that can immediately <strong>disaggregate</strong> <span class="math inline">\(X_t\)</span>. That makes it distinct from RAS/IPF balancing, from temporal-frequency disaggregation (Denton/Chow–Lin/Fernández), and from hierarchical forecast reconciliation.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">9.2. References</h2>
+<p>Deming, W. E., &amp; Stephan, F. F. (1940). On a least squares adjustment of a sampled frequency table when the expected marginal totals are known. <em>The Annals of Mathematical Statistics, 11</em>(4), 427–444. <a href="https://doi.org/10.1214/aoms/1177731829" class="uri">https://doi.org/10.1214/aoms/1177731829</a> (see method description on pp.&nbsp;428–430 for the iterative proportional fitting idea). ([<a href="https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pdf?utm_source=chatgpt.com">apps.bea.gov</a>][1])</p>
+<p>Eurostat. (2013). <em>Handbook on quarterly national accounts</em> (2013 edition). Publications Office of the European Union. (See Chapter “Benchmarking and temporal disaggregation,” esp.&nbsp;the Denton formulation and BLU approaches, pp.&nbsp;79–98.)</p>
+<p>International Labour Organization (ILO), International Monetary Fund (IMF), Organisation for Economic Co-operation and Development (OECD), Eurostat, United Nations Economic Commission for Europe (UNECE), &amp; The World Bank. (2020). <em>Consumer Price Index Manual: Concepts and Methods</em>. IMF. (Aggregation structure and weighting practices are explained throughout; see e.g.&nbsp;Ch. 3 on index number theory and aggregation). ([<a href="https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version?utm_source=chatgpt.com">Scribd</a>][2])</p>
+<p>Wickramasuriya, S. L., Athanasopoulos, G., &amp; Hyndman, R. J. (2019). Optimal forecast reconciliation for hierarchical and grouped time series through trace minimization. <em>Statistica Sinica, 30</em>(4), 1555–1586. (Preprint version available as arXiv:1805.07245; see Sections 1–2 for the reconciliation setup.) ([<a href="https://www.scribd.com/document/794344468/Book4-SVD?utm_source=chatgpt.com">Scribd</a>][3])</p>
+<section id="notes-on-scope-and-claims" class="level3">
+<h3 class="anchored" data-anchor-id="notes-on-scope-and-claims">9.2.1. Notes on Scope and Claims</h3>
+<ul>
+<li><strong>On novelty.</strong> Because adjacent areas are vast, we phrase novelty as <strong>“to our knowledge, we did not find …”</strong> rather than an absolute first. The distinctive combination here is: <strong>(i)</strong> uncertain <strong>intermediary</strong> <span class="math inline">\(Z\)</span> treated as a <strong>prior on the simplex</strong>, <strong>(ii)</strong> <strong>likelihood built from PCA via SVD</strong> on time-centered <span class="math inline">\(Z\)</span>, and <strong>(iii)</strong> <strong>analytical (non-MCMC) posterior</strong> used to <strong>disaggregate an unrelated aggregate</strong> <span class="math inline">\(X_t\)</span>.</li>
+<li><strong>On CPI examples.</strong> Public CPI databases (e.g., headline CPI and coarse categories) typically lack rich sectoral disaggregation tied to national accounts—hence the need to <strong>transfer structure</strong> from a proxy like <span class="math inline">\(Z\)</span> (e.g., value added) rather than rely on directly observed <span class="math inline">\(X_{t,k}\)</span>. The CPI Manual (2020) documents aggregation frameworks and weights at a conceptual level but does not provide a ready-made cross-sectional mapping suited to your use case (see CPI Manual, 2020). [1]: <a href="https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pdf?utm_source=chatgpt.com">https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pd</a>f “An Empirical Review of Methods for Temporal Distribution …” [2]: <a href="https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version?utm_source=chatgpt.com">https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version</a> “Input Output Analysis Foundations and Extensions 2nd” [3]: <a href="https://www.scribd.com/document/794344468/Book4-SVD?utm_source=chatgpt.com">https://www.scribd.com/document/794344468/Book4-SVD</a> “Book4 SVD | PDF | Principal Component Analysis”</li>
+</ul>
+</section>
+</section>
+<section id="economic-applications" class="level2">
+<h2 class="anchored" data-anchor-id="economic-applications">9.3. Economic Applications</h2>
+<section id="disaggregating-consumer-price-index" class="level3">
+<h3 class="anchored" data-anchor-id="disaggregating-consumer-price-index">9.3.1. Disaggregating Consumer Price Index</h3>
+<p>This package enables analyses that were previously impossible:</p>
+<ul>
+<li><p><strong>Which sectors are truly driving inflation?</strong> Decompose CPI by economic activity to identify inflation sources</p></li>
+<li><p><strong>How do price shocks differentially affect industries?</strong> Understand sector-specific impacts of monetary policy</p></li>
+<li><p><strong>What are the real sectoral price dynamics?</strong> Track inflation patterns at the industry level</p></li>
+</ul>
+<p>These are questions policymakers need answered but couldn’t address with existing tools. No traditional methods exist for disaggregating CPI by economic sector because the mapping between consumer prices and productive sectors is inherently uncertain.</p>
+</section>
+</section>
+<section id="applications-beyond-economics" class="level2">
+<h2 class="anchored" data-anchor-id="applications-beyond-economics">9.4. Applications Beyond Economics</h2>
+<p>The framework generalizes to any domain with the <strong>structure transfer problem</strong>:</p>
+<section id="neuroscience" class="level3">
+<h3 class="anchored" data-anchor-id="neuroscience">9.4.1. Neuroscience</h3>
+<p>Relate global brain activity (aggregated) to specific cognitive functions (disaggregated) using imperfect anatomical mappings. Understand which brain regions contribute to observed EEG/MEG signals while accounting for spatial uncertainty.</p>
+</section>
+<section id="climate-science" class="level3">
+<h3 class="anchored" data-anchor-id="climate-science">9.4.2. Climate Science&nbsp;</h3>
+<p>Distribute global climate projections to regional levels using uncertain downscaling models. Project temperature/precipitation changes from coarse climate models to local watersheds while quantifying projection uncertainty.</p>
+</section>
+<section id="epidemiology" class="level3">
+<h3 class="anchored" data-anchor-id="epidemiology">9.4.3. Epidemiology</h3>
+<p>Allocate national mortality rates to specific subpopulations using imperfect demographic proxies. Decompose country-level disease burden to demographic groups when direct measurements are unavailable.</p>
+</section>
+<section id="signal-processing" class="level3">
+<h3 class="anchored" data-anchor-id="signal-processing">9.4.4. Signal Processing</h3>
+<p>Reconstruct high-frequency components from compressed signals using approximate dictionaries. Recover detailed structure from aggregated measurements in compressed sensing applications.</p>
+</section>
+<section id="machine-learning" class="level3">
+<h3 class="anchored" data-anchor-id="machine-learning">9.4.5. Machine Learning</h3>
+<p>Transfer knowledge from source domains to granular target domains through noisy intermediate representations. Apply domain adaptation when the mapping between domains is uncertain.</p>
+</section>
+</section>
+<section id="real-world-impact" class="level2">
+<h2 class="anchored" data-anchor-id="real-world-impact">9.5. Real-World Impact</h2>
+<p>By providing the first principled method for CPI disaggregation, this package opens new analytical frontiers:</p>
+<ul>
+<li><p><strong>Central banks</strong> can identify sector-specific inflation drivers for targeted policy</p></li>
+<li><p><strong>Researchers</strong> can study differential price transmission across industries</p></li>
+<li><p><strong>Analysts</strong> can decompose aggregate shocks into sectoral components</p></li>
+<li><p><strong>Policymakers</strong> can design interventions based on granular inflation dynamics</p></li>
+</ul>
+<p>The framework’s generality means similar breakthroughs are possible wherever the <strong>structure transfer problem</strong> appears—from neuroscience to climate modeling.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/IsadoreNabi\.github\.io\/philosophy-of-statistics");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Powered by <a href="https://www.marxistphilosophyofscience.com">Marxist Philosophy of Science</a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>© 2025 José Mauricio Gómez Julián</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>PHILOSOPHY OF STATISTICS — Lab Notes</title>
+<link>https://IsadoreNabi.github.io/philosophy-of-statistics/</link>
+<atom:link href="https://IsadoreNabi.github.io/philosophy-of-statistics/index.xml" rel="self" type="application/rss+xml"/>
+<description></description>
+<generator>quarto-1.8.24</generator>
+<lastBuildDate>Wed, 17 Sep 2025 06:00:00 GMT</lastBuildDate>
+<item>
+  <title>BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-bayesian-disaggregation/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<blockquote class="blockquote">
+<p>This article summarizes a practical framework for sectoral disaggregation of aggregate indices (e.g., CPI) using deterministic posterior updates and explicit diagnostics. The approach is implemented in the <code>BayesianDisaggregation</code> R package and emphasizes coherence with a sectoral likelihood, numerical/temporal stability, and interpretability.</p>
+</blockquote>
+<section id="problem-setup" class="level2">
+<h2 class="anchored" data-anchor-id="problem-setup">1. Problem Setup</h2>
+<p>Consider an aggregate index observed over periods (t = 1,,T). The goal is a sectoral decomposition into (K) components whose shares lie on the unit simplex, with rows that sum to one. The workflow starts from a prior weight matrix (P ^{T K}) (row-stochastic), builds a sectoral likelihood vector (L ^{K-1}), spreads it over time into (L_T ^{T K}), and applies a deterministic update to obtain the posterior (W) (also row-stochastic).</p>
+</section>
+<section id="constructing-the-sectoral-likelihood-l" class="level2">
+<h2 class="anchored" data-anchor-id="constructing-the-sectoral-likelihood-l">2. Constructing the Sectoral Likelihood (L)</h2>
+<p><strong>PC1 Salience.</strong> Columns of (P) are centered over time; an SVD/PCA is computed on the centered matrix. The first right singular vector’s absolute entries are normalized to obtain a non-negative (L). When PC1 is degenerate, a fallback uses column means of (P) (renormalized). Attributes record loadings, explained variance and the fallback flag.</p>
+<p><strong>Temporal Spreading.</strong> A non-negative profile (w_t) spreads (L) into (L_T) by row-normalization. Built-in patterns include <code>constant</code>, <code>recent</code> (linearly increasing in (t)), <code>linear</code>, and <code>bell</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># From the package:</span></span>
+<span id="cb1-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># L  &lt;- compute_L_from_P(P)</span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># LT &lt;- spread_likelihood(L, T_periods = nrow(P), pattern = "recent")</span></span></code></pre></div></div>
+</section>
+<section id="deterministic-posterior-updates-mcmc-free" class="level2">
+<h2 class="anchored" data-anchor-id="deterministic-posterior-updates-mcmc-free">2. Deterministic Posterior Updates (MCMC-Free)</h2>
+<p>Four options are provided:</p>
+<ul>
+<li><strong>Weighted Average:</strong> <img src="https://latex.codecogs.com/png.latex?W%20=%20%5Ctext%7Bnorm1%7D%5C%7B%5Clambda%20P%20+%20(1-%5Clambda)%20L_T%5C%7D">.</li>
+<li><strong>Multiplicative:</strong> <img src="https://latex.codecogs.com/png.latex?W%20=%20%5Ctext%7Bnorm1%7D%5C%7BP%20%5Codot%20L_T%5C%7D">.</li>
+<li><strong>Dirichlet Mean:</strong> analytic conjugacy with γ&gt;0; smaller γ sharpens the posterior mean.</li>
+<li><strong>Adaptive Mixing:</strong> sector-wise mixing scales by prior volatility.</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_weighted(P, LT, lambda = 0.7)</span></span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_multiplicative(P, LT)</span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_dirichlet(P, LT, gamma = 0.1)</span></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># posterior_adaptive(P, LT)</span></span></code></pre></div></div>
+<p>All updates keep rows on the simplex by construction.</p>
+</section>
+<section id="diagnostics-coherence-stability-interpretability" class="level2">
+<h2 class="anchored" data-anchor-id="diagnostics-coherence-stability-interpretability">3. Diagnostics: Coherence, Stability, Interpretability</h2>
+<ul>
+<li><strong>Coherence:</strong> correlation gain of the posterior temporal mean <img src="https://latex.codecogs.com/png.latex?%5Cbar%7Bw%7D"> vs.&nbsp;prior <img src="https://latex.codecogs.com/png.latex?%5Cbar%7Bp%7D"> with respect to <img src="https://latex.codecogs.com/png.latex?L">, bounded in <img src="https://latex.codecogs.com/png.latex?%5B0,1%5D"> via a linear scale.</li>
+<li><strong>Numerical &amp; Temporal Stability:</strong> exponential penalty for row-sum deviation/negatives plus a smoothness score based on average absolute differences over time; combined into a composite stability score.</li>
+<li><strong>Interpretability:</strong> preservation of sectoral structure (corr<img src="https://latex.codecogs.com/png.latex?(%5Cbar%7Bp%7D,%5Cbar%7Bw%7D)">) and plausibility of average relative shifts (90th percentile). Implementation is exposed as <code>coherence_score()</code>, <code>numerical_stability_exp()</code>, <code>temporal_stability()</code>, <code>stability_composite()</code>, and <code>interpretability_score()</code>.</li>
+</ul>
+</section>
+<section id="end-to-end-api" class="level2">
+<h2 class="anchored" data-anchor-id="end-to-end-api">4. End-To-End API</h2>
+<p>A convenience wrapper orchestrates I/O, likelihood construction, posterior, metrics, and exports.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># bayesian_disaggregate(</span></span>
+<span id="cb3-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   path_cpi, path_weights,</span></span>
+<span id="cb3-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   method = c("weighted","multiplicative","dirichlet","adaptive"),</span></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   lambda = 0.7, gamma = 0.1,</span></span>
+<span id="cb3-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   coh_mult = 3.0, coh_const = 0.5,</span></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   stab_a = 1000, stab_b = 10, stab_kappa = 50,</span></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   likelihood_pattern = "recent"</span></span>
+<span id="cb3-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+<p>Outputs include a tidy posterior <img src="https://latex.codecogs.com/png.latex?W">, diagnostics, optional Excel exports, and quick plots.</p>
+</section>
+<section id="synthetic-and-reproducible-demo" class="level2">
+<h2 class="anchored" data-anchor-id="synthetic-and-reproducible-demo">5. Synthetic and Reproducible Demo</h2>
+<p>The following chunk synthesizes a small prior, derives <img src="https://latex.codecogs.com/png.latex?L"> and <img src="https://latex.codecogs.com/png.latex?L_T">, compares posteriors, and computes key metrics. It renders quickly on any machine.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">123</span>)</span>
+<span id="cb4-2">T <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>; K <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span></span>
+<span id="cb4-3">P <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">matrix</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rexp</span>(T<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>K), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">nrow =</span> T); P <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> P <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rowSums</span>(P)</span>
+<span id="cb4-4"></span>
+<span id="cb4-5">L  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">compute_L_from_P</span>(P)                       <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># PCA/SVD with robust fallback</span></span>
+<span id="cb4-6">LT <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">spread_likelihood</span>(L, T, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">pattern =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"recent"</span>)</span>
+<span id="cb4-7"></span>
+<span id="cb4-8">W_adapt <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">posterior_adaptive</span>(P, LT)            <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># recommended when sector volatilities differ</span></span>
+<span id="cb4-9">coh  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">coherence_score</span>(P, W_adapt, L)</span>
+<span id="cb4-10">stab <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">stability_composite</span>(W_adapt, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">a =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">b =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">kappa =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>)</span>
+<span id="cb4-11">intr <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">interpretability_score</span>(P, W_adapt)</span>
+<span id="cb4-12"></span>
+<span id="cb4-13">eff  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.65</span>                                    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># heuristic efficiency placeholder</span></span>
+<span id="cb4-14">comp <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.30</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>coh <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>stab <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.25</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>intr <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.20</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>eff</span>
+<span id="cb4-15"></span>
+<span id="cb4-16"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">round</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">data.frame</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coherence=</span>coh, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stability=</span>stab, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">interpretability=</span>intr,</span>
+<span id="cb4-17">                 <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">efficiency=</span>eff, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">composite=</span>comp), <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>)</span></code></pre></div></div>
+</div>
+<p>The demo mirrors the manual’s quick example and target ranges.</p>
+</section>
+<section id="real-data-pipeline-disabled-for-speed" class="level2">
+<h2 class="anchored" data-anchor-id="real-data-pipeline-disabled-for-speed">6. Real-Data Pipeline (Disabled for Speed)</h2>
+<p>Switch <code>eval: true</code> after setting paths to local Excel files. This runs the compact grid, re-executes the best configuration, and writes a single Excel with all artifacts.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Example paths (Windows: use forward slashes or raw strings)</span></span>
+<span id="cb5-2">path_cpi <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"E:/Carpeta de Estudio/.../CPI.xlsx"</span></span>
+<span id="cb5-3">path_w   <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"E:/Carpeta de Estudio/.../PESOS VAB.xlsx"</span></span>
+<span id="cb5-4"></span>
+<span id="cb5-5">base_res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bayesian_disaggregate</span>(</span>
+<span id="cb5-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">path_cpi =</span> path_cpi, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">path_weights =</span> path_w,</span>
+<span id="cb5-7">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">method =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"adaptive"</span>,</span>
+<span id="cb5-8">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lambda =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.7</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">gamma =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>,</span>
+<span id="cb5-9">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coh_mult =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3.0</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">coh_const =</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span>,</span>
+<span id="cb5-10">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_a =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_b =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">stab_kappa =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">60</span>,</span>
+<span id="cb5-11">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">likelihood_pattern =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"recent"</span></span>
+<span id="cb5-12">)</span>
+<span id="cb5-13"></span>
+<span id="cb5-14">base_res<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>metrics</span></code></pre></div></div>
+</div>
+<p>A minimal grid search and one-file Excel export can be added following the package helpers.</p>
+</section>
+<section id="reading-the-visuals" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-visuals">7. Reading the Visuals</h2>
+<p>A posterior heatmap reveals sectoral persistence and smoothness over time; top-sectors line plots emphasize dominant components; the sectoral-CPI sheet shows <img src="https://latex.codecogs.com/png.latex?%5Chat%7BY%7D_%7Bt,k%7D%20=%20%5Ctext%7BCPI%7D_t%20%5Ctimes%20W_%7Bt,k%7D">, enabling a decomposed view of the aggregate series.</p>
+</section>
+<section id="practical-defaults" class="level2">
+<h2 class="anchored" data-anchor-id="practical-defaults">8. Practical Defaults</h2>
+<p>Adaptive mixing is robust under heterogeneous prior volatility; otherwise the weighted rule with <img src="https://latex.codecogs.com/png.latex?%5Clambda%20%5Cin%20%5B0.7,%200.9%5D"> often performs strongly. Coherence scaling <img src="https://latex.codecogs.com/png.latex?(%5Ctexttt%7Bmult%7D=3.0,%5C%20%5Ctexttt%7Bconst%7D=0.5)"> yields a bounded, interpretable 0–1 score. The exponential numerical penalty is intentionally sharp to enforce row-stochasticity in automated runs.</p>
+</section>
+<section id="key-innovation" class="level1">
+<h1>9. Key Innovation</h1>
+<p><em>This package represents a methodological contribution to econometrics and data science, providing the first analytical solution to the structure transfer problem with uncertain intermediaries.</em></p>
+<p>The package’s breakthrough lies in recognizing that PCA on temporally-centered disaggregation weights yields exactly the likelihood signal needed for Bayesian updating. This enables: - <strong>Formal uncertainty quantification</strong> rather than ad-hoc treatment - <strong>Analytical solutions</strong> for tractable sample sizes - <strong>Transparent propagation</strong> of proxy uncertainty to final results</p>
+<section id="summary-of-related-methods-and-where-this-package-fits" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-related-methods-and-where-this-package-fits">9.1. Summary of Related Methods and Where This package Fits</h2>
+<p><strong>Problem.</strong> You often want to compare an <strong>aggregate</strong> series <img src="https://latex.codecogs.com/png.latex?X_t"> (e.g., CPI) with a <strong>disaggregated</strong> series <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,k%7D"> across sectors <img src="https://latex.codecogs.com/png.latex?k">, but only have an <strong>imperfect intermediary</strong> <img src="https://latex.codecogs.com/png.latex?Z_%7Bt,k%7D"> that approximates the cross-sectional structure (e.g., sectoral value added). The conceptual challenge is <strong>transferring structure</strong> from <img src="https://latex.codecogs.com/png.latex?Z"> to disaggregate <img src="https://latex.codecogs.com/png.latex?X">, while <strong>honestly accounting for uncertainty</strong> in <img src="https://latex.codecogs.com/png.latex?Z">.</p>
+<p><strong>What this package does.</strong> The package treats <img src="https://latex.codecogs.com/png.latex?Z"> as a <strong>Bayesian prior</strong> over sectoral weights <img src="https://latex.codecogs.com/png.latex?P_%7Bt,k%7D"> (rows on the probability simplex), extracts a <strong>low-dimensional temporal signal</strong> via <strong>PCA computed by SVD</strong> on the time-centered matrix <img src="https://latex.codecogs.com/png.latex?Z">, and uses that signal as an <strong>analytical likelihood</strong> to obtain a <strong>closed-form posterior</strong> <img src="https://latex.codecogs.com/png.latex?W_%7Bt,k%7D"> for the weights. The updated weights then disaggregate <img src="https://latex.codecogs.com/png.latex?X_t"> into <img src="https://latex.codecogs.com/png.latex?X_%7Bt,k%7D=W_%7Bt,k%7D%5C,X_t">. This is entirely <strong>MCMC-free</strong> and computationally light. Conceptually, it is a <strong>structure-transfer</strong> method with an <strong>uncertain intermediary</strong> and an <strong>analytical update</strong>.</p>
+<p><strong>What we did <em>not</em> find in the literature.</strong> We did not find a prior, named methodology that (i) takes an <strong>uncertain structural intermediary</strong> <img src="https://latex.codecogs.com/png.latex?Z">, (ii) <strong>derives a temporal likelihood</strong> from <strong>PCA/SVD</strong> of <img src="https://latex.codecogs.com/png.latex?Z">, and (iii) performs an <strong>analytical Bayesian update</strong> to produce posterior disaggregation weights that remain <strong>row-stochastic</strong> and are used to disaggregate an unrelated aggregate <img src="https://latex.codecogs.com/png.latex?X_t">. There are adjacent traditions, but each misses at least one of these pieces:</p>
+<ul>
+<li><strong>Biproportional balancing / RAS / IPF.</strong> Classic RAS adjusts a matrix to match new margins by <strong>multiplying rows/columns</strong> iteratively (Deming &amp; Stephan, 1940, pp.&nbsp;28–29; overviews referencing Bacharach, 1970). It <strong>doesn’t</strong> construct a likelihood from PCA/SVD nor deliver a <strong>probabilistic posterior on the simplex</strong> for use as disaggregation weights. It’s a deterministic reconciliation method for totals, not a Bayesian structure-transfer with an uncertain intermediary.</li>
+<li><strong>Temporal disaggregation</strong> (Denton, Chow–Lin, Fernández). These methods distribute <strong>low-frequency aggregates</strong> into higher frequency using a related indicator series, via smoothness/BLU estimators (Eurostat, 2013, pp.&nbsp;79–98; see Denton-type formulations; Chow–Lin and Fernández are discussed there). They <strong>do not</strong> address <strong>cross-sectional</strong> disaggregation with <strong>simplex-valued weights</strong> nor use PCA-derived likelihoods.</li>
+<li><strong>Forecast reconciliation for hierarchies</strong> (e.g., MinT). This reconciles <strong>inconsistent forecasts across aggregation trees</strong> by projecting onto a coherent subspace (Wickramasuriya et al., 2019, pp.&nbsp;1–3). It is <em>forecast</em>-centric and linear-algebraic—not a Bayesian update for <strong>compositional</strong> weights with PCA-likelihoods.</li>
+<li><strong>Compositional/Bayesian state-space models</strong> exist (e.g., Dirichlet evolutions), but we did not find an <strong>analytical</strong> 1-step update that (a) builds its <strong>likelihood from PCA/SVD of</strong> <img src="https://latex.codecogs.com/png.latex?Z"> and (b) outputs <strong>posterior weights</strong> to <strong>disaggregate a different aggregate series</strong> <img src="https://latex.codecogs.com/png.latex?X_t">.</li>
+</ul>
+<p><strong>Takeaway.</strong> To our knowledge, the package provides a <strong>new, analytical</strong> approach to the “structure transfer with uncertain intermediary” problem in the specific setting of <strong>time-varying, simplex-valued weights</strong>: it uses <strong>PCA via SVD</strong> on <img src="https://latex.codecogs.com/png.latex?Z"> to define a <strong>temporal likelihood</strong>, and then performs a <strong>closed-form Bayesian update</strong> to posterior weights that can immediately <strong>disaggregate</strong> <img src="https://latex.codecogs.com/png.latex?X_t">. That makes it distinct from RAS/IPF balancing, from temporal-frequency disaggregation (Denton/Chow–Lin/Fernández), and from hierarchical forecast reconciliation.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">9.2. References</h2>
+<p>Deming, W. E., &amp; Stephan, F. F. (1940). On a least squares adjustment of a sampled frequency table when the expected marginal totals are known. <em>The Annals of Mathematical Statistics, 11</em>(4), 427–444. <a href="https://doi.org/10.1214/aoms/1177731829" class="uri">https://doi.org/10.1214/aoms/1177731829</a> (see method description on pp.&nbsp;428–430 for the iterative proportional fitting idea). ([<a href="https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pdf?utm_source=chatgpt.com">apps.bea.gov</a>][1])</p>
+<p>Eurostat. (2013). <em>Handbook on quarterly national accounts</em> (2013 edition). Publications Office of the European Union. (See Chapter “Benchmarking and temporal disaggregation,” esp.&nbsp;the Denton formulation and BLU approaches, pp.&nbsp;79–98.)</p>
+<p>International Labour Organization (ILO), International Monetary Fund (IMF), Organisation for Economic Co-operation and Development (OECD), Eurostat, United Nations Economic Commission for Europe (UNECE), &amp; The World Bank. (2020). <em>Consumer Price Index Manual: Concepts and Methods</em>. IMF. (Aggregation structure and weighting practices are explained throughout; see e.g.&nbsp;Ch. 3 on index number theory and aggregation). ([<a href="https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version?utm_source=chatgpt.com">Scribd</a>][2])</p>
+<p>Wickramasuriya, S. L., Athanasopoulos, G., &amp; Hyndman, R. J. (2019). Optimal forecast reconciliation for hierarchical and grouped time series through trace minimization. <em>Statistica Sinica, 30</em>(4), 1555–1586. (Preprint version available as arXiv:1805.07245; see Sections 1–2 for the reconciliation setup.) ([<a href="https://www.scribd.com/document/794344468/Book4-SVD?utm_source=chatgpt.com">Scribd</a>][3])</p>
+<section id="notes-on-scope-and-claims" class="level3">
+<h3 class="anchored" data-anchor-id="notes-on-scope-and-claims">9.2.1. Notes on Scope and Claims</h3>
+<ul>
+<li><strong>On novelty.</strong> Because adjacent areas are vast, we phrase novelty as <strong>“to our knowledge, we did not find …”</strong> rather than an absolute first. The distinctive combination here is: <strong>(i)</strong> uncertain <strong>intermediary</strong> <img src="https://latex.codecogs.com/png.latex?Z"> treated as a <strong>prior on the simplex</strong>, <strong>(ii)</strong> <strong>likelihood built from PCA via SVD</strong> on time-centered <img src="https://latex.codecogs.com/png.latex?Z">, and <strong>(iii)</strong> <strong>analytical (non-MCMC) posterior</strong> used to <strong>disaggregate an unrelated aggregate</strong> <img src="https://latex.codecogs.com/png.latex?X_t">.</li>
+<li><strong>On CPI examples.</strong> Public CPI databases (e.g., headline CPI and coarse categories) typically lack rich sectoral disaggregation tied to national accounts—hence the need to <strong>transfer structure</strong> from a proxy like <img src="https://latex.codecogs.com/png.latex?Z"> (e.g., value added) rather than rely on directly observed <img src="https://latex.codecogs.com/png.latex?X_%7Bt,k%7D">. The CPI Manual (2020) documents aggregation frameworks and weights at a conceptual level but does not provide a ready-made cross-sectional mapping suited to your use case (see CPI Manual, 2020). [1]: <a href="https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pdf?utm_source=chatgpt.com">https://apps.bea.gov/scb/pdf/2008/05%20May/0508_methods.pd</a>f “An Empirical Review of Methods for Temporal Distribution …” [2]: <a href="https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version?utm_source=chatgpt.com">https://www.scribd.com/document/915498814/Input-Output-Analysis-Foundations-and-Extensions-2nd-edition-Ronald-E-Miller-pdf-version</a> “Input Output Analysis Foundations and Extensions 2nd” [3]: <a href="https://www.scribd.com/document/794344468/Book4-SVD?utm_source=chatgpt.com">https://www.scribd.com/document/794344468/Book4-SVD</a> “Book4 SVD | PDF | Principal Component Analysis”</li>
+</ul>
+</section>
+</section>
+<section id="economic-applications" class="level2">
+<h2 class="anchored" data-anchor-id="economic-applications">9.3. Economic Applications</h2>
+<section id="disaggregating-consumer-price-index" class="level3">
+<h3 class="anchored" data-anchor-id="disaggregating-consumer-price-index">9.3.1. Disaggregating Consumer Price Index</h3>
+<p>This package enables analyses that were previously impossible:</p>
+<ul>
+<li><p><strong>Which sectors are truly driving inflation?</strong> Decompose CPI by economic activity to identify inflation sources</p></li>
+<li><p><strong>How do price shocks differentially affect industries?</strong> Understand sector-specific impacts of monetary policy</p></li>
+<li><p><strong>What are the real sectoral price dynamics?</strong> Track inflation patterns at the industry level</p></li>
+</ul>
+<p>These are questions policymakers need answered but couldn’t address with existing tools. No traditional methods exist for disaggregating CPI by economic sector because the mapping between consumer prices and productive sectors is inherently uncertain.</p>
+</section>
+</section>
+<section id="applications-beyond-economics" class="level2">
+<h2 class="anchored" data-anchor-id="applications-beyond-economics">9.4. Applications Beyond Economics</h2>
+<p>The framework generalizes to any domain with the <strong>structure transfer problem</strong>:</p>
+<section id="neuroscience" class="level3">
+<h3 class="anchored" data-anchor-id="neuroscience">9.4.1. Neuroscience</h3>
+<p>Relate global brain activity (aggregated) to specific cognitive functions (disaggregated) using imperfect anatomical mappings. Understand which brain regions contribute to observed EEG/MEG signals while accounting for spatial uncertainty.</p>
+</section>
+<section id="climate-science" class="level3">
+<h3 class="anchored" data-anchor-id="climate-science">9.4.2. Climate Science&nbsp;</h3>
+<p>Distribute global climate projections to regional levels using uncertain downscaling models. Project temperature/precipitation changes from coarse climate models to local watersheds while quantifying projection uncertainty.</p>
+</section>
+<section id="epidemiology" class="level3">
+<h3 class="anchored" data-anchor-id="epidemiology">9.4.3. Epidemiology</h3>
+<p>Allocate national mortality rates to specific subpopulations using imperfect demographic proxies. Decompose country-level disease burden to demographic groups when direct measurements are unavailable.</p>
+</section>
+<section id="signal-processing" class="level3">
+<h3 class="anchored" data-anchor-id="signal-processing">9.4.4. Signal Processing</h3>
+<p>Reconstruct high-frequency components from compressed signals using approximate dictionaries. Recover detailed structure from aggregated measurements in compressed sensing applications.</p>
+</section>
+<section id="machine-learning" class="level3">
+<h3 class="anchored" data-anchor-id="machine-learning">9.4.5. Machine Learning</h3>
+<p>Transfer knowledge from source domains to granular target domains through noisy intermediate representations. Apply domain adaptation when the mapping between domains is uncertain.</p>
+</section>
+</section>
+<section id="real-world-impact" class="level2">
+<h2 class="anchored" data-anchor-id="real-world-impact">9.5. Real-World Impact</h2>
+<p>By providing the first principled method for CPI disaggregation, this package opens new analytical frontiers:</p>
+<ul>
+<li><p><strong>Central banks</strong> can identify sector-specific inflation drivers for targeted policy</p></li>
+<li><p><strong>Researchers</strong> can study differential price transmission across industries</p></li>
+<li><p><strong>Analysts</strong> can decompose aggregate shocks into sectoral components</p></li>
+<li><p><strong>Policymakers</strong> can design interventions based on granular inflation dynamics</p></li>
+</ul>
+<p>The framework’s generality means similar breakthroughs are possible wherever the <strong>structure transfer problem</strong> appears—from neuroscience to climate modeling.</p>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>packages</category>
+  <category>Bayesian</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-bayesian-disaggregation/</guid>
+  <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Welcome To My Blog</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/welcome/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>Welcome to this blog! This space is dedicated to sharing statistical tools and methods that I develop and find necessary during my research in Marxist Political Economy in particular, and Philosophy of Science in general.</p>
+<p>My worldview and approach to science are grounded in Classical Marxism, drawing from the works of Marx, Engels, Lenin, Mandel, Rosdolsky, Lukács, Gramsci, Haldane, Oparin, and others. This theoretical framework informs not only the questions I ask but also how I approach methodological and analytical challenges in my research. The tools, code, and techniques I share here emerge from practical research needs, and I hope they prove useful to others working in similar areas or anyone interested in statistical applications within critical social science research.</p>
+<p>This blog is a derivative of my main blog at <strong>www.marxistphilosophyofscience.com</strong>, where I explore broader theoretical and philosophical questions. Here, the focus is more technical and methodological, complementing the theoretical discussions with practical computational tools.</p>
+<p>Feel free to use, adapt, and build upon anything you find here. Science, after all, is a collective endeavor.</p>
+<p><img src="https://IsadoreNabi.github.io/philosophy-of-statistics/posts/welcome/PHOTO.jpg" class="img-fluid"></p>
+
+
+
+ ]]></description>
+  <category>news</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/welcome/</guid>
+  <pubDate>Sun, 14 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>

@@ -4,7 +4,7 @@ project:
 
 website:
   title: "PHILOSOPHY OF STATISTICS — Lab Notes"
-  site-url: "https://IsadoreNabi.github.io/philosophyofstatistics"
+  site-url: "https://IsadoreNabi.github.io/philosophy-of-statistics"
   navbar:
     left:
       - text: Home
