@@ -1,0 +1,194 @@
+---
+title: "EconCausal: Bayesian & Econometric Tools for Predictive Causality"
+description: "Three Complementary Engines: Bayesian GLM with AR(1), Bayesian Structural Time Series With Spike-And-Slab, and ECM with MARS"
+author: "José Mauricio Gómez Julián"
+date: 2025-09-17
+categories: [R, packages, Bayesian, econometrics]
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> This article presents the **EconCausal** library: a compact toolkit for **predictive causal assessment** between production and circulation variables with **time-aware validation**. The library exposes three engines—(1) Bayesian GLM with AR(1) errors, (2) Bayesian State-Space (BSTS) with spike-and-slab selection, and (3) an ECM enhanced with MARS—so practitioners can trade off structural transparency, predictive sharpness, and computational cost while keeping evaluation on out-of-sample grounds.
+
+## 1. Overview
+
+EconCausal implements a **diagnostics-first** workflow. Each engine is paired with **Leave-Future-Out (LFO)** rolling evaluation, reporting **Expected Log Predictive Density (ELPD)** alongside classical error metrics. Stability is summarized as **support**, i.e., the fraction of rolling folds where the full model **wins** against a strict baseline.
+
+### Why three engines?
+
+* **GLM-AR(1)**: fast Bayesian regression with AR(1) errors; ideal when a small set of lags is economically motivated and serial correlation must be handled explicitly.
+* **BSTS + spike-and-slab**: structural trend/level (and optional seasonality) with automatic predictor selection; strongest when **decomposition** and **calibrated intervals** matter.
+* **ECM + MARS**: hybrid frequentist benchmark for **cointegrated** pairs that may exhibit **nonlinear** short-run corrections.
+
+The three are deliberately different: **parametric Bayesian**, **structural Bayesian**, and **hybrid frequentist**—so results can be triangulated across assumptions.
+
+## 2. Engines
+
+### 2.1. Bayesian GLM with AR(1) Errors (BGLM-AR1)
+
+**Model.** The standardized outcome $Y_{t,s}$ is regressed on a standardized time index $t_s$ and standardized lags of $X$, with AR(1) residuals:
+
+$$
+Y_{t,s}=\alpha+\beta_0 t_s+\sum_{i=1}^L \beta_i X_{t-i,s}+\epsilon_t,\quad \epsilon_t=\phi \epsilon_{t-1}+\eta_t.
+$$
+
+Standardization is critical for efficient HMC/NUTS.
+
+**Baseline.** $Y_{t,s}\sim 1+t_s+\text{AR(1)}$ provides the **null** without $X$-information for strict OOS comparisons.
+
+**Priors.** Weakly informative: $\beta\sim N(0,1)$, $\alpha\sim t_3(0,2.5)$, $\sigma\sim\text{Exp}(1)$; $\phi\in(-1,1)$.
+
+**Sampling & diagnostics.** 4 chains, 1500 iters, warmup 750, `adapt_delta=0.95`, `max_treedepth=12`; R-hat < 1.01, ESS > 400, zero/few divergences.
+
+**Temporal validation.** LFO with **sliding** window; a fold is a **victory** if $\Delta$ELPD > 0 **and** RMSE decreases. Support = wins / folds. Thresholds: **0.70** (strict), **0.60** (moderate).
+
+**Function.** `bglmar1()` orchestrates the entire pipeline (I/O, scaling per-fold, AR(1) fits via `brms/cmdstanr`, metrics, ranking, and CSV export). Key arguments include `max_lag`, `initial_frac`, `initial_min`, `test_h`, `step_h`, and MCMC controls.
+
+```r
+# Example (disabled for speed)
+# result <- bglmar1(
+#   data_path = "path/to/data.xlsx",
+#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",
+#                 "IPC","TdI_LdelT","TasaDescuento"),
+#   prod_vars = c("ValorExportaciones","Real_Net_Profit",
+#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",
+#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",
+#                 "InvestmentPerWorker_PPP2017"),
+#   max_lag = 3, test_h = 12, step_h = 12
+# )
+```
+
+### 2.2. Bayesian Structural Time Series with Spike-and-Slab (BSTS)
+
+**Framework.** Two-equation state-space:
+
+$$
+\text{obs: } y_t = Z_t' \alpha_t + \beta' x_t + \epsilon_t,\quad
+\text{state: } \alpha_{t+1} = T_t \alpha_t + R_t \eta_t,
+$$
+
+with structural components for **level**, **trend** (optional), and **seasonality** (optional).
+
+**Selection.** Spike-and-slab priors perform **automatic variable selection** over lagged regressors.
+
+**Validation.** LFO with **expanding** window (init 80%, horizon 6, step 6). Victory if $\Delta$ELPD > 0 and $\Delta$RMSE > 0 (note: defined as RMSE$_\text{base}$-RMSE$_\text{full}$). Support and thresholds as above.
+
+**Function.** `bsts_model()` tunes **LL vs LLT**, runs MCMC (2000 iters, burn 500), computes ELPD/coverage/PIT, ranks pairs, and writes CSV outputs. Arguments include `max_lag`, `seasonality`, and LFO controls.
+
+```r
+# Example (disabled for speed)
+# ss <- bsts_model(
+#   data_path = "path/to/data.xlsx",
+#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",
+#                 "IPC","TdI_LdelT","TasaDescuento"),
+#   prod_vars = c("ValorExportaciones","Real_Net_Profit",
+#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",
+#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",
+#                 "InvestmentPerWorker_PPP2017"),
+#   lfo_h = 6, lfo_step = 6, seasonality = 12
+# )
+```
+
+### 2.3. Error-Correction with MARS (ECM-MARS)
+
+**Purpose.** A robust frequentist benchmark for **cointegrated** pairs, augmenting linear ECM with **MARS splines** to capture **nonlinear short-run adjustment**. Rolling CV and nested tuning are included to guard against overfitting.
+
+**Function.** `ecm_mars()` accepts production/circulation sets, cointegration rule (Engle-Granger or Johansen), and a MARS grid; it performs rolling validation, filters by minimum support, and returns a tidy results table.
+
+```r
+# Example (disabled for speed)
+# ec <- ecm_mars(
+#   data_path = "path/to/data.xlsx",
+#   circ_vars = c("ER.SPOT.CAN.US","ER.SPOT.US.CAN","ER.SPOT.US.REMB",
+#                 "CPI","TreasuryBonds10y","FedDiscountRate"),
+#   prod_vars = c("Exports","RealNetProfit","RealSocialConsumptionPerWorker2017",
+#                 "RealWagePPP2017","CapitalStockPPP2017",
+#                 "LaborProductivityPPP2017","InvestmentPerWorkerPPP2017"),
+#   cointeg_rule = "either"
+# )
+```
+
+## 3. Validation & Metrics
+
+**Principle.** Models are compared **out-of-sample** with two orthogonal criteria:
+
+* **ELPD** for probabilistic fit (predictive density on future data).
+* **RMSE** (plus MAE, sMAPE, $R^2$) for point accuracy on the original scale.
+
+A fold **wins** only if it improves **both**. The **support** statistic (wins / folds) summarizes temporal stability; results are ranked by **support**, then $\Delta$ELPD, then $\Delta$RMSE.
+
+## 4. Quickstart (deferred evaluation)
+
+```{r}
+#| label: setup
+#| include: false
+knitr::opts_chunk$set(error = TRUE)
+have_brm <- requireNamespace("brms", quietly = TRUE) &&
+            requireNamespace("cmdstanr", quietly = TRUE)
+have_bsts <- requireNamespace("bsts", quietly = TRUE)
+
+# EconCausal functions assumed available in the working environment.
+```
+
+```r
+#| eval: false
+# GLM-AR(1)
+res_glm <- bglmar1(
+  data_path = "path/to/data.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  max_lag = 3, test_h = 12, step_h = 12
+)
+
+# BSTS
+res_ss <- bsts_model(
+  data_path = "path/to/data.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  lfo_h = 6, lfo_step = 6, seasonality = 12
+)
+
+# ECM-MARS
+res_ecm <- ecm_mars(
+  data_path = "path/to/data.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  cointeg_rule = "either"
+)
+```
+
+## 5. Outputs & Reading the Results
+
+Each runner writes **rankings** and **winner lists** (support ≥ 0.70 / 0.60) and, for BSTS, **coverage/PIT** diagnostics. CSV exports are provided for quick inspection or downstream reporting.
+
+## 6. Design Choices & Trade-offs
+
+* **Per-fold scaling** prevents data leakage and keeps HMC on $\mathcal{O}(1)$ scales.
+* **Dual criteria** (ELPD + RMSE) filter single-metric mirages.
+* **Engine diversity** enables **triangulation** across assumptions (AR(1) vs structural components vs cointegration + nonlinearity).
+
+## 7. When to Use Which
+
+* Prefer **GLM-AR1** for compact lag structures and clear serial dependence.
+* Prefer **BSTS** for decomposition, calibrated intervals, and automatic selection.
+* Prefer **ECM-MARS** when cointegration is theoretically warranted and nonlinearity in corrections is expected.
+
+---
+
+### Notes & Method Sources
+
+Concise method notes were adapted from the package's methodological documents and function headers. See the detailed **BGLM-AR1** write-up (model, priors, LFO, diagnostics), the **BSTS** framework (state equations, selection, validation), and the **ECM-MARS** protocol (I(1), cointegration, MARS tuning).
+
+---
+
+#### Reproducibility switch
+
+Set chunk `eval: false` to `true` for live runs. Heavy models (BSTS and BGLM) use MCMC; disable evaluation for speed on blog render.
+
+---
+
+*Project page:* [https://github.com/IsadoreNabi/EconCausal](https://github.com/IsadoreNabi/EconCausal)

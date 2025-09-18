@@ -1,0 +1,287 @@
+---
+title: "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales"
+description: "De vecindarios → base → topología completa, hacia una regla de decisión clara: cuándo la continuidad global es válida — y cuándo la segmentación es obligatoria."
+author: "José Mauricio Gómez Julián"
+date: 2025-09-18
+categories: [R, topología, series-temporales]
+format:
+  html:
+    toc: true
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+# Mostrar errores en la página en lugar de abortar el renderizado
+knitr::opts_chunk$set(error = TRUE)
+
+have_pkg <- requireNamespace("topologyR", quietly = TRUE)
+if (have_pkg) library(topologyR)
+```
+
+## 1. Problema y Motivación: Una Salvaguarda Basada en Topología
+
+Muchos flujos de trabajo saltan directamente al suavizado, imputación o estimación de tendencias globales **sin** verificar si los datos se comportan como un sistema conectado único. **topologyR** eleva la información métrica local (distancias adyacentes) a vecindarios → base → topología completa, y luego plantea una pregunta decisiva: *¿La topología inducida está conectada?* Si la respuesta es **sí**, las suposiciones de continuidad global están respaldadas; si es **no**, debes **segmentar** y analizar los componentes por separado. Esta es la salvaguarda central y la propuesta de valor del paquete.
+
+Concretamente, topologyR proporciona un pipeline para: (i) construir subbases/bases a partir de datos numéricos con umbrales ajustables, (ii) derivar la topología inducida y cuantificar su complejidad, (iii) ejecutar verificaciones de conectividad no dirigida/dirigida/de cobertura, y (iv) explorar cómo las elecciones de umbral cambian la estructura.
+
+## 2. Definiciones Formales
+
+**Espacio topológico.** Dado un conjunto $X$, una topología $\tau$ sobre $X$ es una familia de subconjuntos (los conjuntos *abiertos*) que contiene $\emptyset$ y $X$ y está cerrada bajo uniones arbitrarias e intersecciones finitas; $(X,\tau)$ es un **espacio topológico**.
+
+**Base y subbase (intuitivo).** A partir de los datos, formamos **vecindarios** bajo un umbral $\tau$ (¡no la topología!), tomamos **intersecciones finitas** para formar una **base**, y a partir de uniones de elementos de la base obtenemos la **topología completa**. En topologyR esto se hace explícitamente desde un vector numérico.
+
+**Conectividad (β₀).** Estudiamos si la topología inducida conecta todos los índices presentes bajo alcanzabilidad no dirigida o dirigida, o al menos **cubre** todos los índices (verificación manual).
+
+## 3. Pipeline de topologyR: ¿Qué construye el paquete para ti?
+
+1. **Vecindarios** bajo un umbral ajustable (ej., basado en IQR)
+
+2. **Base** mediante intersecciones (incluir conjuntos vacío/completo para corrección)
+
+3. **Topología completa** a partir de la base (clausura bajo uniones/intersecciones finitas)
+
+4. **Verificaciones de conectividad**: DFS no dirigido, DFS dirigido, cobertura manual
+
+5. **Exploración de umbrales** (diferencias media/mediana, SD, IQR/factor, similar a DBSCAN) y resúmenes/gráficos de **barrido de factores**
+
+Un bosquejo R compacto del algoritmo central aparece a continuación (el paquete implementa una versión robusta):
+
+```r
+# Vecindarios bajo τ
+subbase <- lapply(seq_along(x), function(i) which(abs(x - x[i]) <= τ))
+
+# Base: incluir ∅ y X
+base <- list(integer(0), seq_along(x))
+for (i in seq_along(x)) for (j in i:length(x)) {
+  S <- intersect(subbase[[i]], subbase[[j]])
+  if (length(S) > 0) base <- c(base, list(S))
+}
+base <- unique(base)
+
+# De la base -> topología (uniones/intersecciones finitas)
+# Verificaciones de conectividad:
+# is_topology_connected(topology)         # DFS no dirigido
+# is_topology_connected2(topology)        # DFS dirigido (secuencial)
+# is_topology_connected_manual(topology)  # cobertura 1..n
+```
+
+## 4. Innovación Clave
+
+### 4.1. Revelando Invariantes Topológicos para Validar Métodos de Imputación
+
+#### 4.1.1. Introducción: El Problema Fundamental
+
+A menudo asumimos continuidad global (suavizado, kriging, splines, etc.) **antes** de verificar si la continuidad es siquiera matemáticamente defendible. topologyR arregla esto elevando las distancias locales a una topología y leyendo invariantes (notablemente **conectividad**) que deciden la validez del método.
+
+#### 4.1.2. Fundamentos Conceptuales
+
+**4.1.2.1. La Naturaleza del Problema.** Los datos secuenciales ocultan propiedades globales críticas para la elección de método: conectividad del sistema, complejidad estructural y puntos de quiebre que pueden invalidar la continuidad. Estos no son visibles solo a partir de distancias por pares.
+
+**4.1.2.2. La Solución Topológica.**
+
+1. Proximidad métrica → **relaciones de vecindario**
+2. Vecindarios → **subbase**
+3. Intersecciones/uniones → **base** y **topología completa**
+4. Topología → **invariantes** (conectividad) que gobiernan la validez del método.
+
+#### 4.1.3. El Marco Teórico: Conectividad ⇒ Validez del Método
+
+**Caso I: Topología Conectada.** Válido usar métodos continuos globales (interpolación polinomial/lineal, splines cúbicos, kriging/geoestadística, promedios móviles, kernels continuos), asumiendo muestreo/ruido adecuado.
+
+**Caso II: Topología desconectada.** La continuidad global es inválida; debes cambiar a enfoques **por segmentos** o **regímenes** (imputación independiente por componente, cambio de régimen, condicional por segmento, hot-deck dentro del componente, mezclas finitas).
+
+#### 4.1.4. Propiedades Globales vs Locales
+
+Las propiedades **globales** (medias de período completo, tendencia secular, volatilidad sistémica, estructura de ciclos, cointegración, memoria larga, sincronía neural global, tendencias climáticas centenarias, patrones de circulación) **requieren** conectividad; una topología desconectada invalida la imputación continua global a través del quiebre. Las propiedades **locales** (volatilidad de ventana corta, derivadas locales, agrupamiento local, AR(1)/AR(2) en rezagos cortos, puntos de inflexión locales, espectros de segmento corto) pueden analizarse por componente independientemente de la conectividad global.
+
+#### 4.1.5. Aplicaciones Críticas por Dominio
+
+* **Econometría.** Las desconexiones marcan crisis estructurales; evitar tendencias que crucen discontinuidades.
+* **Medicina/Neurociencia.** Las intervenciones pueden dividir regímenes; probar continuidad antes del agrupamiento longitudinal.
+* **Climatología.** Los eventos extremos pueden cortar la continuidad; no extrapolar tendencias a través de regímenes.
+
+#### 4.1.6. Regla de Decisión Fundamental
+
+1. Análisis globales: **la conectividad es necesaria** para métodos continuos.
+2. Análisis locales: usar métodos continuos **dentro de cada componente**.
+3. Mixto: segmentar globalmente; aplicar herramientas continuas locales dentro de cada segmento.
+
+#### 4.1.7. Conclusiones Sobre la Contribución Fundamental
+
+topologyR transforma la imputación de procedimiento heurístico a **matemáticamente fundamentado** revelando la estructura topológica subyacente que justifica (o prohíbe) las suposiciones de continuidad antes de la aplicación — crucial en contextos de políticas, biomédicos y climáticos.
+
+#### 4.1.8. Posicionamiento vs TDA de Propósito General
+
+Enfoque: series 1D, **β₀** (conectividad), regla de decisión explícita. Complementa pilas PH (Ripser/GUDHI/TDAstats/scikit-TDA) para estructura multi-escala/β superior (sin regla de imputación explícita).
+
+#### 4.1.9. Limitaciones y Riesgos
+
+1. **Sensibilidad de Parámetros** (elección de umbral) → mitigar mediante barridos de factores; aún empírico.
+
+2. **Muestreo/ruido** puede simular (des)conexión → tratar "conectado ⇒ continuo" como **prima facie**.
+
+3. **Expresividad** limitada a **β₀**.
+
+4. **Escalabilidad**: construcciones exhaustivas pueden ser $O(n^2)$.
+
+#### 4.1.10. Conclusiones Globales y Orientación Práctica
+
+Usar topologyR como una herramienta de **gobernanza pre-modelo** para decisiones binarias de **validez**; complementar con PH para características multi-escala sutiles que no rompen la conectividad global.
+
+#### 4.1.11. Referencias
+
+Alvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., & Strømmen, K. (2025). *Detecting the Indian Monsoon using Topological Data Analysis* (arXiv:2504.01022). https://arxiv.org/abs/2504.01022
+
+Bauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. *Journal of Applied and Computational Topology, 5*(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5
+
+Chung, M. K., et al. (2023). Unified topological inference for brain networks in temporal dynamics. *Frontiers in Neuroscience, 17*, 1140289. https://doi.org/10.3389/fnins.2023.1140289
+
+Flammer, M., et al. (2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. *SN Computer Science, 4*, 396. https://doi.org/10.1007/s42979-023-02396-7
+
+Gidea, M. (2017). *Topological data analysis of financial time series* (arXiv:1703.04385). https://arxiv.org/abs/1703.04385
+
+Guo, H., et al. (2020). Empirical study of financial crises based on topological data analysis. *Physica A: Statistical Mechanics and its Applications, 551*, 124198. https://doi.org/10.1016/j.physa.2019.124198
+
+Kang, Y., et al. (2024). High-order brain network feature extraction and characterization via persistent homology. *Frontiers in Neuroscience, 18*, 1378837. https://doi.org/10.3389/fnins.2024.1378837
+
+Kelley, J. L. (2017). *General topology* (Dover ed.; original work published 1955). Dover Publications.
+
+Maria, C., Boissonnat, J.-D., Glisse, M., & Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong & C. Yap (Eds.), *Mathematical Software – ICMS 2014* (pp. 167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28
+
+Otter, N., Porter, M. A., Tillmann, U., Grindrod, P., & Harrington, H. A. (2017). A roadmap for the computation of persistent homology. *EPJ Data Science, 6*, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5
+
+scikit-TDA. (n.d.). *scikit-TDA documentation*. https://docs.scikit-tda.org/
+
+Tralie, C., Saul, N., & Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. *Journal of Open Source Software, 3*(29), 925. https://doi.org/10.21105/joss.00925
+
+Tymochko, S., et al. (2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. *Pattern Recognition Letters, 133*, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003
+
+Ver Hoef, L., et al. (2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. *AI for the Earth Systems, 2*(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1
+
+Wadhwa, R. R., Williamson, D. F. K., Dhawan, A., & Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. *Journal of Open Source Software, 3*(28), 860. https://doi.org/10.21105/joss.00860
+
+Wang, Z., et al. (2023). Automatic epileptic seizure detection based on persistent homology. *Computational and Mathematical Methods in Medicine, 2023*, 9165842. https://doi.org/10.1155/2023/9165842
+
+Xu, X., Gao, Y., Zhong, S., Li, P., & Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. *Frontiers in Neuroscience, 15*, 761703. https://doi.org/10.3389/fnins.2021.761703
+
+## 5. Alcance y Casos de Uso Típicos
+
+* **Series temporales económicas y otras**: regímenes de conectividad, quiebres estructurales.
+* **Datos de señales/biológicos**: grafos de vecindario, verificaciones de cobertura.
+* **Didáctico**: bases/subbases, construcción de topología, puentes grafo↔topología.
+
+## 6. Principios de Diseño
+
+Corrección (incluir ∅ y $X$; rastrear cobertura), transparencia (funciones paso a paso), explorabilidad (heurísticas rápidas y visuales para selección de umbrales).
+
+## 7. Enfoque Técnico: Algoritmos y Motores de Conectividad
+
+**Algoritmo Central** y **Métodos** (DFS no dirigido; DFS secuencial dirigido; cobertura manual) como se bosqueja en §3 arriba.
+
+**Funciones de Conectividad (Internos del Paquete).**
+
+* `is_topology_connected()` construye una adyacencia simétrica a partir de co-pertenencia de conjuntos y ejecuta DFS sobre elementos presentes.
+
+* `is_topology_connected2()` dirige aristas a lo largo de elementos ordenados y consecutivos dentro de cada conjunto y hace DFS desde el mínimo.
+
+* `is_topology_connected_manual()` verifica si cada índice original 1..n aparece en al menos un conjunto.
+
+## 8. API de un Vistazo (Inicio Rápido)
+
+```r
+library(topologyR)
+
+# Vector de ejemplo pequeño
+x <- c(1, 2, 3, 4, 5)
+
+# Construir una topología completa y verificar conectividad
+topo     <- complete_topology(x)
+undirected <- is_topology_connected(topo$topology)
+directed   <- is_topology_connected2(topo$topology)
+manual     <- is_topology_connected_manual(topo$topology)
+
+# Exploración de umbrales y barrido de factores
+ths <- calculate_thresholds(x)
+res <- analyze_topology_factors(x, factors = c(1, 2, 4, 8, 16))
+viz <- visualize_topology_thresholds(x)  # visuales opcionales
+```
+
+## 9. Heurísticas de Umbral y Barrido de Factores
+
+Puedes derivar τ de **diferencias adyacentes media/mediana**, **SD**, **IQR / factor**, o una heurística **similar a DBSCAN**; luego ejecutar un **barrido de factor IQR** (ej., 1, 2, 4, 8, 16) y rastrear **tamaño de base / tamaños de conjuntos** para elegir un régimen estable.
+
+Internamente, el barrido de factores calcula $\tau=\mathrm{IQR}(x)/f$, construye subbases, forma la base (con ∅ y $X$), y resume el tamaño de base y tamaños mín/máx de conjuntos por $f$.
+
+```r
+set.seed(1)
+x <- cumsum(rnorm(200))
+
+ths  <- calculate_thresholds(x)
+resf <- analyze_topology_factors(x, factors = c(2, 4, 8, 16), plot = FALSE)
+
+print(ths)
+print(resf)
+```
+
+## 10. Rendimiento y Escalabilidad
+
+La construcción exacta de vecindarios/base puede crecer como $O(n^2)$; prefiere umbrales robustos + barridos de factores, y considera submuestreo más allá de $n$ moderado. Para diagnósticos de primera pasada en datos muy grandes, usa la verificación de **cobertura manual** y luego refina con DFS dirigido según sea necesario.
+
+## 11. Limitaciones y Notas de Validez
+
+* **Sensibilidad de Umbral**: falsas (des)conexiones si τ está mal configurado → mitigar con rejillas, pero mantener juicio del dominio.
+
+* **Muestreo/ruido**: el muestreo escaso puede simular desconexiones; las superposiciones ligeras pueden simular conexión → tratar "conectado ⇒ continuo" como **prima facie**, no absoluto.
+
+* **Expresividad**: énfasis en **β₀**; características de orden superior requieren pilas PH.
+
+* **Suposiciones**: índices secuenciales 1..n; topologías muy grandes pueden ser intensivas en memoria.
+
+## 12. Ejemplo Completo: Decisión de Imputación
+
+```r
+library(topologyR)
+x <- as.numeric(AirPassengers)
+
+# Predeterminado transparente y robusto para τ y barrido de factores ilustrativo
+ths  <- calculate_thresholds(x)
+res  <- analyze_topology_factors(x, factors = c(2,4,8,16), plot = FALSE)
+
+tau  <- IQR(x)/4
+topo <- complete_topology(x)  # para n pequeño; de lo contrario usar subbases con umbral
+
+is_conn <- is_topology_connected(topo$topology)
+if (is_conn) {
+  message("Conectado: usando imputación continua global.")
+  # ej., stats::spline(...), kriging global, suavizadores
+} else {
+  message("Desconectado: imputación por segmentos y modelos de régimen.")
+  # dividir por componentes conectados; imputar/modelar por segmento
+}
+```
+
+## 13. Posicionamiento vs. TDA de Propósito General
+
+topologyR es una herramienta pre-modelo **enfocada** y orientada a decisiones para **series 1D** (β₀/conectividad). Para estructura multi-escala/β superior o señales de alerta temprana, complementar con **Ripser/GUDHI/TDAstats/scikit-TDA**.
+
+*(Fuentes externas clave listadas en la subsección de referencias 4.1.11. de la wiki de la biblioteca)*
+
+## 14. Instalación
+
+```r
+remotes::install_github("IsadoreNabi/topologyR")
+# o construcción local
+# setwd("/path/to/topologyR"); library(devtools); library(roxygen2); document(); install()
+```
+
+## 15. Licencia y Autor
+
+**LICENCIA:** Licencia MIT — ver LICENSE en el repositorio.
+
+**AUTOR:** José Mauricio Gómez Julián.

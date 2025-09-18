@@ -1,0 +1,194 @@
+---
+title: "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva"
+description: "Tres Motores Complementarios: GLM Bayesiano con AR(1), Series de Tiempo Estructurales Bayesianas con Spike-and-Slab, y ECM con MARS"
+author: "José Mauricio Gómez Julián"
+date: 2025-09-17
+categories: [R, paquetes, Bayesiano, econometría]
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+> Este artículo presenta la biblioteca **EconCausal**: un conjunto compacto de herramientas para la **evaluación causal predictiva** entre variables de producción y circulación con **validación temporal**. La biblioteca expone tres motores—(1) GLM Bayesiano con errores AR(1), (2) State-Space Bayesiano (BSTS) con selección spike-and-slab, y (3) un ECM mejorado con MARS—para que los profesionales puedan equilibrar transparencia estructural, precisión predictiva y costo computacional mientras mantienen la evaluación en terreno fuera de muestra.
+
+## 1. Visión General
+
+EconCausal implementa un flujo de trabajo **primero-los-diagnósticos**. Cada motor está emparejado con evaluación rodante **Leave-Future-Out (LFO)**, reportando **Densidad Predictiva Logarítmica Esperada (ELPD)** junto con métricas de error clásicas. La estabilidad se resume como **soporte**, es decir, la fracción de pliegues rodantes donde el modelo completo **gana** contra una línea base estricta.
+
+### ¿Por qué tres motores?
+
+* **GLM-AR(1)**: regresión Bayesiana rápida con errores AR(1); ideal cuando un pequeño conjunto de rezagos está motivado económicamente y la correlación serial debe manejarse explícitamente.
+* **BSTS + spike-and-slab**: tendencia/nivel estructural (y estacionalidad opcional) con selección automática de predictores; más fuerte cuando importan la **descomposición** y los **intervalos calibrados**.
+* **ECM + MARS**: punto de referencia frecuentista híbrido para pares **cointegrados** que pueden exhibir correcciones de corto plazo **no lineales**.
+
+Los tres son deliberadamente diferentes: **Bayesiano paramétrico**, **Bayesiano estructural**, y **frecuentista híbrido**—para que los resultados puedan triangularse entre supuestos.
+
+## 2. Motores
+
+### 2.1. GLM Bayesiano con Errores AR(1) (BGLM-AR1)
+
+**Modelo.** El resultado estandarizado $Y_{t,s}$ se regresa sobre un índice temporal estandarizado $t_s$ y rezagos estandarizados de $X$, con residuales AR(1):
+
+$$
+Y_{t,s}=\alpha+\beta_0 t_s+\sum_{i=1}^L \beta_i X_{t-i,s}+\epsilon_t,\quad \epsilon_t=\phi \epsilon_{t-1}+\eta_t.
+$$
+
+La estandarización es crítica para HMC/NUTS eficiente.
+
+**Línea base.** $Y_{t,s}\sim 1+t_s+\text{AR(1)}$ proporciona el **nulo** sin información de $X$ para comparaciones OOS estrictas.
+
+**Priors.** Débilmente informativos: $\beta\sim N(0,1)$, $\alpha\sim t_3(0,2.5)$, $\sigma\sim\text{Exp}(1)$; $\phi\in(-1,1)$.
+
+**Muestreo y diagnósticos.** 4 cadenas, 1500 iters, calentamiento 750, `adapt_delta=0.95`, `max_treedepth=12`; R-hat < 1.01, ESS > 400, cero/pocas divergencias.
+
+**Validación temporal.** LFO con ventana **deslizante**; un pliegue es una **victoria** si $\Delta$ELPD > 0 **y** RMSE disminuye. Soporte = victorias / pliegues. Umbrales: **0.70** (estricto), **0.60** (moderado).
+
+**Función.** `bglmar1()` orquesta todo el pipeline (E/S, escalado por pliegue, ajustes AR(1) vía `brms/cmdstanr`, métricas, ranking, y exportación CSV). Los argumentos clave incluyen `max_lag`, `initial_frac`, `initial_min`, `test_h`, `step_h`, y controles MCMC.
+
+```r
+# Ejemplo (deshabilitado por velocidad)
+# resultado <- bglmar1(
+#   data_path = "ruta/a/datos.xlsx",
+#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",
+#                 "IPC","TdI_LdelT","TasaDescuento"),
+#   prod_vars = c("ValorExportaciones","Real_Net_Profit",
+#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",
+#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",
+#                 "InvestmentPerWorker_PPP2017"),
+#   max_lag = 3, test_h = 12, step_h = 12
+# )
+```
+
+### 2.2. Series de Tiempo Estructurales Bayesianas con Spike-and-Slab (BSTS)
+
+**Marco de trabajo.** State-space de dos ecuaciones:
+
+$$
+\text{obs: } y_t = Z_t' \alpha_t + \beta' x_t + \epsilon_t,\quad
+\text{estado: } \alpha_{t+1} = T_t \alpha_t + R_t \eta_t,
+$$
+
+con componentes estructurales para **nivel**, **tendencia** (opcional), y **estacionalidad** (opcional).
+
+**Selección.** Los priors spike-and-slab realizan **selección automática de variables** sobre regresores rezagados.
+
+**Validación.** LFO con ventana **expansiva** (init 80%, horizonte 6, paso 6). Victoria si $\Delta$ELPD > 0 y $\Delta$RMSE > 0 (nota: definido como RMSE$_\text{base}$-RMSE$_\text{completo}$). Soporte y umbrales como arriba.
+
+**Función.** `bsts_model()` afina **LL vs LLT**, ejecuta MCMC (2000 iters, quemado 500), calcula ELPD/cobertura/PIT, clasifica pares, y escribe salidas CSV. Los argumentos incluyen `max_lag`, `seasonality`, y controles LFO.
+
+```r
+# Ejemplo (deshabilitado por velocidad)
+# ss <- bsts_model(
+#   data_path = "ruta/a/datos.xlsx",
+#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",
+#                 "IPC","TdI_LdelT","TasaDescuento"),
+#   prod_vars = c("ValorExportaciones","Real_Net_Profit",
+#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",
+#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",
+#                 "InvestmentPerWorker_PPP2017"),
+#   lfo_h = 6, lfo_step = 6, seasonality = 12
+# )
+```
+
+### 2.3. Corrección de Error con MARS (ECM-MARS)
+
+**Propósito.** Un punto de referencia frecuentista robusto para pares **cointegrados**, aumentando ECM lineal con **splines MARS** para capturar **ajuste no lineal de corto plazo**. Se incluyen CV rodante y ajuste anidado para proteger contra sobreajuste.
+
+**Función.** `ecm_mars()` acepta conjuntos de producción/circulación, regla de cointegración (Engle-Granger o Johansen), y una cuadrícula MARS; realiza validación rodante, filtra por soporte mínimo, y devuelve una tabla de resultados ordenada.
+
+```r
+# Ejemplo (deshabilitado por velocidad)
+# ec <- ecm_mars(
+#   data_path = "ruta/a/datos.xlsx",
+#   circ_vars = c("ER.SPOT.CAN.US","ER.SPOT.US.CAN","ER.SPOT.US.REMB",
+#                 "CPI","TreasuryBonds10y","FedDiscountRate"),
+#   prod_vars = c("Exports","RealNetProfit","RealSocialConsumptionPerWorker2017",
+#                 "RealWagePPP2017","CapitalStockPPP2017",
+#                 "LaborProductivityPPP2017","InvestmentPerWorkerPPP2017"),
+#   cointeg_rule = "either"
+# )
+```
+
+## 3. Validación y Métricas
+
+**Principio.** Los modelos se comparan **fuera de muestra** con dos criterios ortogonales:
+
+* **ELPD** para ajuste probabilístico (densidad predictiva en datos futuros).
+* **RMSE** (más MAE, sMAPE, $R^2$) para precisión puntual en la escala original.
+
+Un pliegue **gana** solo si mejora **ambos**. El estadístico de **soporte** (victorias / pliegues) resume la estabilidad temporal; los resultados se clasifican por **soporte**, luego $\Delta$ELPD, luego $\Delta$RMSE.
+
+## 4. Inicio Rápido (evaluación diferida)
+
+```{r}
+#| label: configuracion
+#| include: false
+knitr::opts_chunk$set(error = TRUE)
+have_brm <- requireNamespace("brms", quietly = TRUE) &&
+            requireNamespace("cmdstanr", quietly = TRUE)
+have_bsts <- requireNamespace("bsts", quietly = TRUE)
+
+# Funciones EconCausal asumidas disponibles en el ambiente de trabajo.
+```
+
+```r
+#| eval: false
+# GLM-AR(1)
+res_glm <- bglmar1(
+  data_path = "ruta/a/datos.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  max_lag = 3, test_h = 12, step_h = 12
+)
+
+# BSTS
+res_ss <- bsts_model(
+  data_path = "ruta/a/datos.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  lfo_h = 6, lfo_step = 6, seasonality = 12
+)
+
+# ECM-MARS
+res_ecm <- ecm_mars(
+  data_path = "ruta/a/datos.xlsx",
+  circ_vars = c("..."), prod_vars = c("..."),
+  cointeg_rule = "either"
+)
+```
+
+## 5. Salidas y Lectura de Resultados
+
+Cada ejecutor escribe **clasificaciones** y **listas de ganadores** (soporte ≥ 0.70 / 0.60) y, para BSTS, diagnósticos de **cobertura/PIT**. Se proporcionan exportaciones CSV para inspección rápida o informes posteriores.
+
+## 6. Decisiones de Diseño y Compensaciones
+
+* **Escalado por pliegue** previene fuga de datos y mantiene HMC en escalas $\mathcal{O}(1)$.
+* **Criterios duales** (ELPD + RMSE) filtran espejismos de métrica única.
+* **Diversidad de motores** permite **triangulación** entre supuestos (AR(1) vs componentes estructurales vs cointegración + no linealidad).
+
+## 7. Cuándo Usar Cuál
+
+* Prefiere **GLM-AR1** para estructuras de rezago compactas y dependencia serial clara.
+* Prefiere **BSTS** para descomposición, intervalos calibrados y selección automática.
+* Prefiere **ECM-MARS** cuando la cointegración está teóricamente justificada y se espera no linealidad en las correcciones.
+
+---
+
+### Notas y Fuentes de Métodos
+
+Las notas concisas de métodos fueron adaptadas de los documentos metodológicos del paquete y encabezados de funciones. Ver el documento detallado de **BGLM-AR1** (modelo, priors, LFO, diagnósticos), el marco de **BSTS** (ecuaciones de estado, selección, validación), y el protocolo **ECM-MARS** (I(1), cointegración, ajuste MARS).
+
+---
+
+#### Interruptor de Reproducibilidad
+
+Cambia `eval: false` a `true` en los chunks para ejecuciones en vivo. Los modelos pesados (BSTS y BGLM) usan MCMC; deshabilita la evaluación por velocidad en el renderizado del blog.
+
+---
+
+*Página del proyecto:* [https://github.com/IsadoreNabi/EconCausal](https://github.com/IsadoreNabi/EconCausal)

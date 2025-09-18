@@ -2,8 +2,12 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/2025-09-19-topologyR/index.html",
+      "/posts/2025-09-19-topologyR-esp/index.html",
       "/posts/2025-09-17-bayesian-disaggregation/index.html",
       "/posts/2025-09-17-desagregacion-bayesiana/index.html",
+      "/posts/2025-09-18-econcausal/index.html",
+      "/posts/2025-09-18-econcausal-esp/index.html",
       "/posts/welcome/index.html"
     ]
   }

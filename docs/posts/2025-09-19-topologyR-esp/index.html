@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.24">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="José Mauricio Gómez Julián">
+<meta name="dcterms.date" content="2025-09-18">
+<meta name="description" content="De vecindarios → base → topología completa, hacia una regla de decisión clara: cuándo la continuidad global es válida — y cuándo la segmentación es obligatoria.">
+
+<title>topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales – PHILOSOPHY OF STATISTICS — Lab Notes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-9859d952baf36b9a7db628bbb9f3169e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">PHILOSOPHY OF STATISTICS — Lab Notes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.marxistphilosophyofscience.com"> 
+<span class="menu-text">Powered by Marxist Philosophy of Science</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales</h1>
+                  <div>
+        <div class="description">
+          De vecindarios → base → topología completa, hacia una regla de decisión clara: cuándo la continuidad global es válida — y cuándo la segmentación es obligatoria.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">R</div>
+                <div class="quarto-category">topología</div>
+                <div class="quarto-category">series-temporales</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>José Mauricio Gómez Julián </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 18, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#problema-y-motivación-una-salvaguarda-basada-en-topología" id="toc-problema-y-motivación-una-salvaguarda-basada-en-topología" class="nav-link active" data-scroll-target="#problema-y-motivación-una-salvaguarda-basada-en-topología">1. Problema y Motivación: Una Salvaguarda Basada en Topología</a></li>
+  <li><a href="#definiciones-formales" id="toc-definiciones-formales" class="nav-link" data-scroll-target="#definiciones-formales">2. Definiciones Formales</a></li>
+  <li><a href="#pipeline-de-topologyr-qué-construye-el-paquete-para-ti" id="toc-pipeline-de-topologyr-qué-construye-el-paquete-para-ti" class="nav-link" data-scroll-target="#pipeline-de-topologyr-qué-construye-el-paquete-para-ti">3. Pipeline de topologyR: ¿Qué construye el paquete para ti?</a></li>
+  <li><a href="#innovación-clave" id="toc-innovación-clave" class="nav-link" data-scroll-target="#innovación-clave">4. Innovación Clave</a>
+  <ul class="collapse">
+  <li><a href="#revelando-invariantes-topológicos-para-validar-métodos-de-imputación" id="toc-revelando-invariantes-topológicos-para-validar-métodos-de-imputación" class="nav-link" data-scroll-target="#revelando-invariantes-topológicos-para-validar-métodos-de-imputación">4.1. Revelando Invariantes Topológicos para Validar Métodos de Imputación</a></li>
+  </ul></li>
+  <li><a href="#alcance-y-casos-de-uso-típicos" id="toc-alcance-y-casos-de-uso-típicos" class="nav-link" data-scroll-target="#alcance-y-casos-de-uso-típicos">5. Alcance y Casos de Uso Típicos</a></li>
+  <li><a href="#principios-de-diseño" id="toc-principios-de-diseño" class="nav-link" data-scroll-target="#principios-de-diseño">6. Principios de Diseño</a></li>
+  <li><a href="#enfoque-técnico-algoritmos-y-motores-de-conectividad" id="toc-enfoque-técnico-algoritmos-y-motores-de-conectividad" class="nav-link" data-scroll-target="#enfoque-técnico-algoritmos-y-motores-de-conectividad">7. Enfoque Técnico: Algoritmos y Motores de Conectividad</a></li>
+  <li><a href="#api-de-un-vistazo-inicio-rápido" id="toc-api-de-un-vistazo-inicio-rápido" class="nav-link" data-scroll-target="#api-de-un-vistazo-inicio-rápido">8. API de un Vistazo (Inicio Rápido)</a></li>
+  <li><a href="#heurísticas-de-umbral-y-barrido-de-factores" id="toc-heurísticas-de-umbral-y-barrido-de-factores" class="nav-link" data-scroll-target="#heurísticas-de-umbral-y-barrido-de-factores">9. Heurísticas de Umbral y Barrido de Factores</a></li>
+  <li><a href="#rendimiento-y-escalabilidad" id="toc-rendimiento-y-escalabilidad" class="nav-link" data-scroll-target="#rendimiento-y-escalabilidad">10. Rendimiento y Escalabilidad</a></li>
+  <li><a href="#limitaciones-y-notas-de-validez" id="toc-limitaciones-y-notas-de-validez" class="nav-link" data-scroll-target="#limitaciones-y-notas-de-validez">11. Limitaciones y Notas de Validez</a></li>
+  <li><a href="#ejemplo-completo-decisión-de-imputación" id="toc-ejemplo-completo-decisión-de-imputación" class="nav-link" data-scroll-target="#ejemplo-completo-decisión-de-imputación">12. Ejemplo Completo: Decisión de Imputación</a></li>
+  <li><a href="#posicionamiento-vs.-tda-de-propósito-general" id="toc-posicionamiento-vs.-tda-de-propósito-general" class="nav-link" data-scroll-target="#posicionamiento-vs.-tda-de-propósito-general">13. Posicionamiento vs.&nbsp;TDA de Propósito General</a></li>
+  <li><a href="#instalación" id="toc-instalación" class="nav-link" data-scroll-target="#instalación">14. Instalación</a></li>
+  <li><a href="#licencia-y-autor" id="toc-licencia-y-autor" class="nav-link" data-scroll-target="#licencia-y-autor">15. Licencia y Autor</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="problema-y-motivación-una-salvaguarda-basada-en-topología" class="level2">
+<h2 class="anchored" data-anchor-id="problema-y-motivación-una-salvaguarda-basada-en-topología">1. Problema y Motivación: Una Salvaguarda Basada en Topología</h2>
+<p>Muchos flujos de trabajo saltan directamente al suavizado, imputación o estimación de tendencias globales <strong>sin</strong> verificar si los datos se comportan como un sistema conectado único. <strong>topologyR</strong> eleva la información métrica local (distancias adyacentes) a vecindarios → base → topología completa, y luego plantea una pregunta decisiva: <em>¿La topología inducida está conectada?</em> Si la respuesta es <strong>sí</strong>, las suposiciones de continuidad global están respaldadas; si es <strong>no</strong>, debes <strong>segmentar</strong> y analizar los componentes por separado. Esta es la salvaguarda central y la propuesta de valor del paquete.</p>
+<p>Concretamente, topologyR proporciona un pipeline para: (i) construir subbases/bases a partir de datos numéricos con umbrales ajustables, (ii) derivar la topología inducida y cuantificar su complejidad, (iii) ejecutar verificaciones de conectividad no dirigida/dirigida/de cobertura, y (iv) explorar cómo las elecciones de umbral cambian la estructura.</p>
+</section>
+<section id="definiciones-formales" class="level2">
+<h2 class="anchored" data-anchor-id="definiciones-formales">2. Definiciones Formales</h2>
+<p><strong>Espacio topológico.</strong> Dado un conjunto <span class="math inline">\(X\)</span>, una topología <span class="math inline">\(\tau\)</span> sobre <span class="math inline">\(X\)</span> es una familia de subconjuntos (los conjuntos <em>abiertos</em>) que contiene <span class="math inline">\(\emptyset\)</span> y <span class="math inline">\(X\)</span> y está cerrada bajo uniones arbitrarias e intersecciones finitas; <span class="math inline">\((X,\tau)\)</span> es un <strong>espacio topológico</strong>.</p>
+<p><strong>Base y subbase (intuitivo).</strong> A partir de los datos, formamos <strong>vecindarios</strong> bajo un umbral <span class="math inline">\(\tau\)</span> (¡no la topología!), tomamos <strong>intersecciones finitas</strong> para formar una <strong>base</strong>, y a partir de uniones de elementos de la base obtenemos la <strong>topología completa</strong>. En topologyR esto se hace explícitamente desde un vector numérico.</p>
+<p><strong>Conectividad (β₀).</strong> Estudiamos si la topología inducida conecta todos los índices presentes bajo alcanzabilidad no dirigida o dirigida, o al menos <strong>cubre</strong> todos los índices (verificación manual).</p>
+</section>
+<section id="pipeline-de-topologyr-qué-construye-el-paquete-para-ti" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline-de-topologyr-qué-construye-el-paquete-para-ti">3. Pipeline de topologyR: ¿Qué construye el paquete para ti?</h2>
+<ol type="1">
+<li><p><strong>Vecindarios</strong> bajo un umbral ajustable (ej., basado en IQR)</p></li>
+<li><p><strong>Base</strong> mediante intersecciones (incluir conjuntos vacío/completo para corrección)</p></li>
+<li><p><strong>Topología completa</strong> a partir de la base (clausura bajo uniones/intersecciones finitas)</p></li>
+<li><p><strong>Verificaciones de conectividad</strong>: DFS no dirigido, DFS dirigido, cobertura manual</p></li>
+<li><p><strong>Exploración de umbrales</strong> (diferencias media/mediana, SD, IQR/factor, similar a DBSCAN) y resúmenes/gráficos de <strong>barrido de factores</strong></p></li>
+</ol>
+<p>Un bosquejo R compacto del algoritmo central aparece a continuación (el paquete implementa una versión robusta):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vecindarios bajo τ</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>subbase <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(x), <span class="cf">function</span>(i) <span class="fu">which</span>(<span class="fu">abs</span>(x <span class="sc">-</span> x[i]) <span class="sc">&lt;=</span> τ))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Base: incluir ∅ y X</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">integer</span>(<span class="dv">0</span>), <span class="fu">seq_along</span>(x))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(x)) <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span><span class="fu">length</span>(x)) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  S <span class="ot">&lt;-</span> <span class="fu">intersect</span>(subbase[[i]], subbase[[j]])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(S) <span class="sc">&gt;</span> <span class="dv">0</span>) base <span class="ot">&lt;-</span> <span class="fu">c</span>(base, <span class="fu">list</span>(S))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>base <span class="ot">&lt;-</span> <span class="fu">unique</span>(base)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># De la base -&gt; topología (uniones/intersecciones finitas)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Verificaciones de conectividad:</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># is_topology_connected(topology)         # DFS no dirigido</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># is_topology_connected2(topology)        # DFS dirigido (secuencial)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># is_topology_connected_manual(topology)  # cobertura 1..n</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="innovación-clave" class="level2">
+<h2 class="anchored" data-anchor-id="innovación-clave">4. Innovación Clave</h2>
+<section id="revelando-invariantes-topológicos-para-validar-métodos-de-imputación" class="level3">
+<h3 class="anchored" data-anchor-id="revelando-invariantes-topológicos-para-validar-métodos-de-imputación">4.1. Revelando Invariantes Topológicos para Validar Métodos de Imputación</h3>
+<section id="introducción-el-problema-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="introducción-el-problema-fundamental">4.1.1. Introducción: El Problema Fundamental</h4>
+<p>A menudo asumimos continuidad global (suavizado, kriging, splines, etc.) <strong>antes</strong> de verificar si la continuidad es siquiera matemáticamente defendible. topologyR arregla esto elevando las distancias locales a una topología y leyendo invariantes (notablemente <strong>conectividad</strong>) que deciden la validez del método.</p>
+</section>
+<section id="fundamentos-conceptuales" class="level4">
+<h4 class="anchored" data-anchor-id="fundamentos-conceptuales">4.1.2. Fundamentos Conceptuales</h4>
+<p><strong>4.1.2.1. La Naturaleza del Problema.</strong> Los datos secuenciales ocultan propiedades globales críticas para la elección de método: conectividad del sistema, complejidad estructural y puntos de quiebre que pueden invalidar la continuidad. Estos no son visibles solo a partir de distancias por pares.</p>
+<p><strong>4.1.2.2. La Solución Topológica.</strong></p>
+<ol type="1">
+<li>Proximidad métrica → <strong>relaciones de vecindario</strong></li>
+<li>Vecindarios → <strong>subbase</strong></li>
+<li>Intersecciones/uniones → <strong>base</strong> y <strong>topología completa</strong></li>
+<li>Topología → <strong>invariantes</strong> (conectividad) que gobiernan la validez del método.</li>
+</ol>
+</section>
+<section id="el-marco-teórico-conectividad-validez-del-método" class="level4">
+<h4 class="anchored" data-anchor-id="el-marco-teórico-conectividad-validez-del-método">4.1.3. El Marco Teórico: Conectividad ⇒ Validez del Método</h4>
+<p><strong>Caso I: Topología Conectada.</strong> Válido usar métodos continuos globales (interpolación polinomial/lineal, splines cúbicos, kriging/geoestadística, promedios móviles, kernels continuos), asumiendo muestreo/ruido adecuado.</p>
+<p><strong>Caso II: Topología desconectada.</strong> La continuidad global es inválida; debes cambiar a enfoques <strong>por segmentos</strong> o <strong>regímenes</strong> (imputación independiente por componente, cambio de régimen, condicional por segmento, hot-deck dentro del componente, mezclas finitas).</p>
+</section>
+<section id="propiedades-globales-vs-locales" class="level4">
+<h4 class="anchored" data-anchor-id="propiedades-globales-vs-locales">4.1.4. Propiedades Globales vs Locales</h4>
+<p>Las propiedades <strong>globales</strong> (medias de período completo, tendencia secular, volatilidad sistémica, estructura de ciclos, cointegración, memoria larga, sincronía neural global, tendencias climáticas centenarias, patrones de circulación) <strong>requieren</strong> conectividad; una topología desconectada invalida la imputación continua global a través del quiebre. Las propiedades <strong>locales</strong> (volatilidad de ventana corta, derivadas locales, agrupamiento local, AR(1)/AR(2) en rezagos cortos, puntos de inflexión locales, espectros de segmento corto) pueden analizarse por componente independientemente de la conectividad global.</p>
+</section>
+<section id="aplicaciones-críticas-por-dominio" class="level4">
+<h4 class="anchored" data-anchor-id="aplicaciones-críticas-por-dominio">4.1.5. Aplicaciones Críticas por Dominio</h4>
+<ul>
+<li><strong>Econometría.</strong> Las desconexiones marcan crisis estructurales; evitar tendencias que crucen discontinuidades.</li>
+<li><strong>Medicina/Neurociencia.</strong> Las intervenciones pueden dividir regímenes; probar continuidad antes del agrupamiento longitudinal.</li>
+<li><strong>Climatología.</strong> Los eventos extremos pueden cortar la continuidad; no extrapolar tendencias a través de regímenes.</li>
+</ul>
+</section>
+<section id="regla-de-decisión-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="regla-de-decisión-fundamental">4.1.6. Regla de Decisión Fundamental</h4>
+<ol type="1">
+<li>Análisis globales: <strong>la conectividad es necesaria</strong> para métodos continuos.</li>
+<li>Análisis locales: usar métodos continuos <strong>dentro de cada componente</strong>.</li>
+<li>Mixto: segmentar globalmente; aplicar herramientas continuas locales dentro de cada segmento.</li>
+</ol>
+</section>
+<section id="conclusiones-sobre-la-contribución-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="conclusiones-sobre-la-contribución-fundamental">4.1.7. Conclusiones Sobre la Contribución Fundamental</h4>
+<p>topologyR transforma la imputación de procedimiento heurístico a <strong>matemáticamente fundamentado</strong> revelando la estructura topológica subyacente que justifica (o prohíbe) las suposiciones de continuidad antes de la aplicación — crucial en contextos de políticas, biomédicos y climáticos.</p>
+</section>
+<section id="posicionamiento-vs-tda-de-propósito-general" class="level4">
+<h4 class="anchored" data-anchor-id="posicionamiento-vs-tda-de-propósito-general">4.1.8. Posicionamiento vs TDA de Propósito General</h4>
+<p>Enfoque: series 1D, <strong>β₀</strong> (conectividad), regla de decisión explícita. Complementa pilas PH (Ripser/GUDHI/TDAstats/scikit-TDA) para estructura multi-escala/β superior (sin regla de imputación explícita).</p>
+</section>
+<section id="limitaciones-y-riesgos" class="level4">
+<h4 class="anchored" data-anchor-id="limitaciones-y-riesgos">4.1.9. Limitaciones y Riesgos</h4>
+<ol type="1">
+<li><p><strong>Sensibilidad de Parámetros</strong> (elección de umbral) → mitigar mediante barridos de factores; aún empírico.</p></li>
+<li><p><strong>Muestreo/ruido</strong> puede simular (des)conexión → tratar “conectado ⇒ continuo” como <strong>prima facie</strong>.</p></li>
+<li><p><strong>Expresividad</strong> limitada a <strong>β₀</strong>.</p></li>
+<li><p><strong>Escalabilidad</strong>: construcciones exhaustivas pueden ser <span class="math inline">\(O(n^2)\)</span>.</p></li>
+</ol>
+</section>
+<section id="conclusiones-globales-y-orientación-práctica" class="level4">
+<h4 class="anchored" data-anchor-id="conclusiones-globales-y-orientación-práctica">4.1.10. Conclusiones Globales y Orientación Práctica</h4>
+<p>Usar topologyR como una herramienta de <strong>gobernanza pre-modelo</strong> para decisiones binarias de <strong>validez</strong>; complementar con PH para características multi-escala sutiles que no rompen la conectividad global.</p>
+</section>
+<section id="referencias" class="level4">
+<h4 class="anchored" data-anchor-id="referencias">4.1.11. Referencias</h4>
+<p>Alvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., &amp; Strømmen, K. (2025). <em>Detecting the Indian Monsoon using Topological Data Analysis</em> (arXiv:2504.01022). https://arxiv.org/abs/2504.01022</p>
+<p>Bauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. <em>Journal of Applied and Computational Topology, 5</em>(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5</p>
+<p>Chung, M. K., et al.&nbsp;(2023). Unified topological inference for brain networks in temporal dynamics. <em>Frontiers in Neuroscience, 17</em>, 1140289. https://doi.org/10.3389/fnins.2023.1140289</p>
+<p>Flammer, M., et al.&nbsp;(2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. <em>SN Computer Science, 4</em>, 396. https://doi.org/10.1007/s42979-023-02396-7</p>
+<p>Gidea, M. (2017). <em>Topological data analysis of financial time series</em> (arXiv:1703.04385). https://arxiv.org/abs/1703.04385</p>
+<p>Guo, H., et al.&nbsp;(2020). Empirical study of financial crises based on topological data analysis. <em>Physica A: Statistical Mechanics and its Applications, 551</em>, 124198. https://doi.org/10.1016/j.physa.2019.124198</p>
+<p>Kang, Y., et al.&nbsp;(2024). High-order brain network feature extraction and characterization via persistent homology. <em>Frontiers in Neuroscience, 18</em>, 1378837. https://doi.org/10.3389/fnins.2024.1378837</p>
+<p>Kelley, J. L. (2017). <em>General topology</em> (Dover ed.; original work published 1955). Dover Publications.</p>
+<p>Maria, C., Boissonnat, J.-D., Glisse, M., &amp; Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong &amp; C. Yap (Eds.), <em>Mathematical Software – ICMS 2014</em> (pp.&nbsp;167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28</p>
+<p>Otter, N., Porter, M. A., Tillmann, U., Grindrod, P., &amp; Harrington, H. A. (2017). A roadmap for the computation of persistent homology. <em>EPJ Data Science, 6</em>, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5</p>
+<p>scikit-TDA. (n.d.). <em>scikit-TDA documentation</em>. https://docs.scikit-tda.org/</p>
+<p>Tralie, C., Saul, N., &amp; Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. <em>Journal of Open Source Software, 3</em>(29), 925. https://doi.org/10.21105/joss.00925</p>
+<p>Tymochko, S., et al.&nbsp;(2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. <em>Pattern Recognition Letters, 133</em>, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003</p>
+<p>Ver Hoef, L., et al.&nbsp;(2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. <em>AI for the Earth Systems, 2</em>(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1</p>
+<p>Wadhwa, R. R., Williamson, D. F. K., Dhawan, A., &amp; Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. <em>Journal of Open Source Software, 3</em>(28), 860. https://doi.org/10.21105/joss.00860</p>
+<p>Wang, Z., et al.&nbsp;(2023). Automatic epileptic seizure detection based on persistent homology. <em>Computational and Mathematical Methods in Medicine, 2023</em>, 9165842. https://doi.org/10.1155/2023/9165842</p>
+<p>Xu, X., Gao, Y., Zhong, S., Li, P., &amp; Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. <em>Frontiers in Neuroscience, 15</em>, 761703. https://doi.org/10.3389/fnins.2021.761703</p>
+</section>
+</section>
+</section>
+<section id="alcance-y-casos-de-uso-típicos" class="level2">
+<h2 class="anchored" data-anchor-id="alcance-y-casos-de-uso-típicos">5. Alcance y Casos de Uso Típicos</h2>
+<ul>
+<li><strong>Series temporales económicas y otras</strong>: regímenes de conectividad, quiebres estructurales.</li>
+<li><strong>Datos de señales/biológicos</strong>: grafos de vecindario, verificaciones de cobertura.</li>
+<li><strong>Didáctico</strong>: bases/subbases, construcción de topología, puentes grafo↔︎topología.</li>
+</ul>
+</section>
+<section id="principios-de-diseño" class="level2">
+<h2 class="anchored" data-anchor-id="principios-de-diseño">6. Principios de Diseño</h2>
+<p>Corrección (incluir ∅ y <span class="math inline">\(X\)</span>; rastrear cobertura), transparencia (funciones paso a paso), explorabilidad (heurísticas rápidas y visuales para selección de umbrales).</p>
+</section>
+<section id="enfoque-técnico-algoritmos-y-motores-de-conectividad" class="level2">
+<h2 class="anchored" data-anchor-id="enfoque-técnico-algoritmos-y-motores-de-conectividad">7. Enfoque Técnico: Algoritmos y Motores de Conectividad</h2>
+<p><strong>Algoritmo Central</strong> y <strong>Métodos</strong> (DFS no dirigido; DFS secuencial dirigido; cobertura manual) como se bosqueja en §3 arriba.</p>
+<p><strong>Funciones de Conectividad (Internos del Paquete).</strong></p>
+<ul>
+<li><p><code>is_topology_connected()</code> construye una adyacencia simétrica a partir de co-pertenencia de conjuntos y ejecuta DFS sobre elementos presentes.</p></li>
+<li><p><code>is_topology_connected2()</code> dirige aristas a lo largo de elementos ordenados y consecutivos dentro de cada conjunto y hace DFS desde el mínimo.</p></li>
+<li><p><code>is_topology_connected_manual()</code> verifica si cada índice original 1..n aparece en al menos un conjunto.</p></li>
+</ul>
+</section>
+<section id="api-de-un-vistazo-inicio-rápido" class="level2">
+<h2 class="anchored" data-anchor-id="api-de-un-vistazo-inicio-rápido">8. API de un Vistazo (Inicio Rápido)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(topologyR)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Vector de ejemplo pequeño</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Construir una topología completa y verificar conectividad</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>topo     <span class="ot">&lt;-</span> <span class="fu">complete_topology</span>(x)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>undirected <span class="ot">&lt;-</span> <span class="fu">is_topology_connected</span>(topo<span class="sc">$</span>topology)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>directed   <span class="ot">&lt;-</span> <span class="fu">is_topology_connected2</span>(topo<span class="sc">$</span>topology)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>manual     <span class="ot">&lt;-</span> <span class="fu">is_topology_connected_manual</span>(topo<span class="sc">$</span>topology)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Exploración de umbrales y barrido de factores</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>ths <span class="ot">&lt;-</span> <span class="fu">calculate_thresholds</span>(x)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">analyze_topology_factors</span>(x, <span class="at">factors =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>viz <span class="ot">&lt;-</span> <span class="fu">visualize_topology_thresholds</span>(x)  <span class="co"># visuales opcionales</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="heurísticas-de-umbral-y-barrido-de-factores" class="level2">
+<h2 class="anchored" data-anchor-id="heurísticas-de-umbral-y-barrido-de-factores">9. Heurísticas de Umbral y Barrido de Factores</h2>
+<p>Puedes derivar τ de <strong>diferencias adyacentes media/mediana</strong>, <strong>SD</strong>, <strong>IQR / factor</strong>, o una heurística <strong>similar a DBSCAN</strong>; luego ejecutar un <strong>barrido de factor IQR</strong> (ej., 1, 2, 4, 8, 16) y rastrear <strong>tamaño de base / tamaños de conjuntos</strong> para elegir un régimen estable.</p>
+<p>Internamente, el barrido de factores calcula <span class="math inline">\(\tau=\mathrm{IQR}(x)/f\)</span>, construye subbases, forma la base (con ∅ y <span class="math inline">\(X\)</span>), y resume el tamaño de base y tamaños mín/máx de conjuntos por <span class="math inline">\(f\)</span>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(<span class="fu">rnorm</span>(<span class="dv">200</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ths  <span class="ot">&lt;-</span> <span class="fu">calculate_thresholds</span>(x)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>resf <span class="ot">&lt;-</span> <span class="fu">analyze_topology_factors</span>(x, <span class="at">factors =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>), <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ths)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(resf)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="rendimiento-y-escalabilidad" class="level2">
+<h2 class="anchored" data-anchor-id="rendimiento-y-escalabilidad">10. Rendimiento y Escalabilidad</h2>
+<p>La construcción exacta de vecindarios/base puede crecer como <span class="math inline">\(O(n^2)\)</span>; prefiere umbrales robustos + barridos de factores, y considera submuestreo más allá de <span class="math inline">\(n\)</span> moderado. Para diagnósticos de primera pasada en datos muy grandes, usa la verificación de <strong>cobertura manual</strong> y luego refina con DFS dirigido según sea necesario.</p>
+</section>
+<section id="limitaciones-y-notas-de-validez" class="level2">
+<h2 class="anchored" data-anchor-id="limitaciones-y-notas-de-validez">11. Limitaciones y Notas de Validez</h2>
+<ul>
+<li><p><strong>Sensibilidad de Umbral</strong>: falsas (des)conexiones si τ está mal configurado → mitigar con rejillas, pero mantener juicio del dominio.</p></li>
+<li><p><strong>Muestreo/ruido</strong>: el muestreo escaso puede simular desconexiones; las superposiciones ligeras pueden simular conexión → tratar “conectado ⇒ continuo” como <strong>prima facie</strong>, no absoluto.</p></li>
+<li><p><strong>Expresividad</strong>: énfasis en <strong>β₀</strong>; características de orden superior requieren pilas PH.</p></li>
+<li><p><strong>Suposiciones</strong>: índices secuenciales 1..n; topologías muy grandes pueden ser intensivas en memoria.</p></li>
+</ul>
+</section>
+<section id="ejemplo-completo-decisión-de-imputación" class="level2">
+<h2 class="anchored" data-anchor-id="ejemplo-completo-decisión-de-imputación">12. Ejemplo Completo: Decisión de Imputación</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(topologyR)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(AirPassengers)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Predeterminado transparente y robusto para τ y barrido de factores ilustrativo</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>ths  <span class="ot">&lt;-</span> <span class="fu">calculate_thresholds</span>(x)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>res  <span class="ot">&lt;-</span> <span class="fu">analyze_topology_factors</span>(x, <span class="at">factors =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">8</span>,<span class="dv">16</span>), <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>tau  <span class="ot">&lt;-</span> <span class="fu">IQR</span>(x)<span class="sc">/</span><span class="dv">4</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>topo <span class="ot">&lt;-</span> <span class="fu">complete_topology</span>(x)  <span class="co"># para n pequeño; de lo contrario usar subbases con umbral</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>is_conn <span class="ot">&lt;-</span> <span class="fu">is_topology_connected</span>(topo<span class="sc">$</span>topology)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (is_conn) {</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">"Conectado: usando imputación continua global."</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ej., stats::spline(...), kriging global, suavizadores</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">"Desconectado: imputación por segmentos y modelos de régimen."</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># dividir por componentes conectados; imputar/modelar por segmento</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="posicionamiento-vs.-tda-de-propósito-general" class="level2">
+<h2 class="anchored" data-anchor-id="posicionamiento-vs.-tda-de-propósito-general">13. Posicionamiento vs.&nbsp;TDA de Propósito General</h2>
+<p>topologyR es una herramienta pre-modelo <strong>enfocada</strong> y orientada a decisiones para <strong>series 1D</strong> (β₀/conectividad). Para estructura multi-escala/β superior o señales de alerta temprana, complementar con <strong>Ripser/GUDHI/TDAstats/scikit-TDA</strong>.</p>
+<p><em>(Fuentes externas clave listadas en la subsección de referencias 4.1.11. de la wiki de la biblioteca)</em></p>
+</section>
+<section id="instalación" class="level2">
+<h2 class="anchored" data-anchor-id="instalación">14. Instalación</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>remotes<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"IsadoreNabi/topologyR"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># o construcción local</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># setwd("/path/to/topologyR"); library(devtools); library(roxygen2); document(); install()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="licencia-y-autor" class="level2">
+<h2 class="anchored" data-anchor-id="licencia-y-autor">15. Licencia y Autor</h2>
+<p><strong>LICENCIA:</strong> Licencia MIT — ver LICENSE en el repositorio.</p>
+<p><strong>AUTOR:</strong> José Mauricio Gómez Julián.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/IsadoreNabi\.github\.io\/philosophy-of-statistics");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Powered by <a href="https://www.marxistphilosophyofscience.com">Marxist Philosophy of Science</a></p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>© 2025 José Mauricio Gómez Julián</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

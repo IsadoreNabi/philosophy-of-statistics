@@ -10,7 +10,1051 @@
 <atom:link href="https://IsadoreNabi.github.io/philosophy-of-statistics/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.8.24</generator>
-<lastBuildDate>Wed, 17 Sep 2025 06:00:00 GMT</lastBuildDate>
+<lastBuildDate>Thu, 18 Sep 2025 06:00:00 GMT</lastBuildDate>
+<item>
+  <title>topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="problem-motivation-a-topology-first-guardrail" class="level2">
+<h2 class="anchored" data-anchor-id="problem-motivation-a-topology-first-guardrail">1. Problem &amp; Motivation: A Topology-First Guardrail</h2>
+<p>Many workflows jump straight into smoothing, imputation, or global trend estimation <strong>without</strong> checking whether the data behave as a single connected system. <strong>topologyR</strong> elevates local metric information (adjacent distances) into neighborhoods → base → full topology, then poses a decisive question: <em>Is the induced topology connected?</em> If <strong>yes</strong>, global continuity assumptions are supported; if <strong>no</strong>, you must <strong>segment</strong> and analyze components separately. This is the package’s central guardrail and value proposition. </p>
+<p>Concretely, topologyR provides a pipeline to: (i) build subbases/bases from numeric data with tunable thresholds, (ii) derive the induced topology and quantify its complexity, (iii) run undirected/directed/coverage connectivity checks, and (iv) explore how threshold choices change structure. </p>
+</section>
+<section id="formal-definitions" class="level2">
+<h2 class="anchored" data-anchor-id="formal-definitions">2. Formal Definitions</h2>
+<p><strong>Topological space.</strong> Given a set <img src="https://latex.codecogs.com/png.latex?X">, a topology <img src="https://latex.codecogs.com/png.latex?%5Ctau"> on <img src="https://latex.codecogs.com/png.latex?X"> is a family of subsets (the <em>open</em> sets) that contains <img src="https://latex.codecogs.com/png.latex?%5Cemptyset"> and <img src="https://latex.codecogs.com/png.latex?X"> and is closed under arbitrary unions and finite intersections; <img src="https://latex.codecogs.com/png.latex?(X,%5Ctau)"> is a <strong>topological space</strong>. </p>
+<p><strong>Base &amp; subbase (intuitive).</strong> From data, we form <strong>neighborhoods</strong> under a threshold <img src="https://latex.codecogs.com/png.latex?%5Ctau"> (not the topology!), take <strong>finite intersections</strong> to form a <strong>base</strong>, and from unions of base elements obtain the <strong>full topology</strong>. In topologyR this is done explicitly from a numeric vector. </p>
+<p><strong>Connectivity (β₀).</strong> We study whether the induced topology connects all present indices under either undirected or directed reachability, or at least <strong>covers</strong> all indices (manual check). </p>
+</section>
+<section id="topologyr-pipeline-what-the-package-builds-for-you" class="level2">
+<h2 class="anchored" data-anchor-id="topologyr-pipeline-what-the-package-builds-for-you">3. topologyR Pipeline: What the package builds for you?</h2>
+<ol type="1">
+<li><p><strong>Neighborhoods</strong> under a tunable threshold (e.g., IQR-based)</p></li>
+<li><p><strong>Base</strong> via intersections (include empty/full sets for correctness)</p></li>
+<li><p><strong>Full topology</strong> from the base (closure under unions/finite intersections)</p></li>
+<li><p><strong>Connectivity</strong> checks: undirected DFS, directed DFS, manual coverage</p></li>
+<li><p><strong>Threshold exploration</strong> (mean/median diffs, SD, IQR/factor, DBSCAN-like) and <strong>factor sweep</strong> summaries/plots </p></li>
+</ol>
+<p>A compact R-sketch of the core algorithm appears below (the package implements a robust version): </p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Neighborhoods under τ</span></span>
+<span id="cb1-2">subbase <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">lapply</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x), <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(i) <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">which</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">abs</span>(x <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> x[i]) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> τ))</span>
+<span id="cb1-3"></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Base: include ∅ and X</span></span>
+<span id="cb1-5">base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">integer</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x))</span>
+<span id="cb1-6"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> (i <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x)) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> (j <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> i<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(x)) {</span>
+<span id="cb1-7">  S <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">intersect</span>(subbase[[i]], subbase[[j]])</span>
+<span id="cb1-8">  <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(S) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(base, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(S))</span>
+<span id="cb1-9">}</span>
+<span id="cb1-10">base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unique</span>(base)</span>
+<span id="cb1-11"></span>
+<span id="cb1-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># From the base -&gt; topology (unions/finite intersections)</span></span>
+<span id="cb1-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Connectivity checks:</span></span>
+<span id="cb1-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected(topology)         # undirected DFS</span></span>
+<span id="cb1-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected2(topology)        # directed DFS (sequential)</span></span>
+<span id="cb1-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected_manual(topology)  # coverage 1..n</span></span></code></pre></div></div>
+</section>
+<section id="key-innovation" class="level2">
+<h2 class="anchored" data-anchor-id="key-innovation">4. Key Innovation</h2>
+<section id="revealing-topological-invariants-to-validate-imputation-methods" class="level3">
+<h3 class="anchored" data-anchor-id="revealing-topological-invariants-to-validate-imputation-methods">4.1. Revealing Topological Invariants to Validate Imputation Methods</h3>
+<section id="introduction-the-fundamental-problem" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-the-fundamental-problem">4.1.1. Introduction: The Fundamental Problem</h4>
+<p>We often assume global continuity (smoothing, kriging, splines, etc.) <strong>before</strong> verifying whether continuity is even mathematically defensible. topologyR fixes this by elevating local distances into a topology and reading off invariants (notably <strong>connectedness</strong>) that decide method validity. </p>
+</section>
+<section id="conceptual-foundations" class="level4">
+<h4 class="anchored" data-anchor-id="conceptual-foundations">4.1.2. Conceptual Foundations</h4>
+<p><strong>4.1.2.1. The Nature of The Problem.</strong> Sequential data hide global properties critical for method choice: system connectivity, structural complexity, and breakpoints that may invalidate continuity. These are not visible from pairwise distances alone. </p>
+<p><strong>4.1.2.2. The Topological Solution.</strong></p>
+<ol type="1">
+<li>Metric proximity → <strong>neighborhood relations</strong></li>
+<li>Neighborhoods → <strong>subbase</strong></li>
+<li>Intersections/unions → <strong>base</strong> and <strong>full topology</strong></li>
+<li>Topology → <strong>invariants</strong> (connectivity) that govern method validity. </li>
+</ol>
+</section>
+<section id="the-theoretical-framework-connectivity-method-validity" class="level4">
+<h4 class="anchored" data-anchor-id="the-theoretical-framework-connectivity-method-validity">4.1.3. The Theoretical Framework: Connectivity ⇒ Method Validity</h4>
+<p><strong>Case I: Connected Topology.</strong> Valid to use global continuous methods (polynomial/linear interpolation, cubic splines, kriging/geostatistics, moving averages, continuous kernels), assuming adequate sampling/noise. </p>
+<p><strong>Case II: Disconnected topology.</strong> Global continuity is invalid; you must switch to <strong>segment-wise</strong> or <strong>regime</strong> approaches (independent imputation per component, regime-switching, conditional-by-segment, hot-deck within component, finite mixtures). </p>
+</section>
+<section id="global-vs-local-properties" class="level4">
+<h4 class="anchored" data-anchor-id="global-vs-local-properties">4.1.4. Global vs Local Properties</h4>
+<p><strong>Global</strong> properties (full-period means, secular trend, systemic volatility, cycle structure, cointegration, long memory, global neural synchrony, centennial climate trends, circulation patterns) <strong>require</strong> connectivity; a disconnected topology invalidates global continuous imputation across the break. <strong>Local</strong> properties (short-window volatility, local derivatives, local clustering, AR(1)/AR(2) at short lags, local inflection points, short-segment spectra) can be analyzed per component regardless of global connectedness. </p>
+</section>
+<section id="critical-applications-by-domain" class="level4">
+<h4 class="anchored" data-anchor-id="critical-applications-by-domain">4.1.5. Critical Applications by Domain</h4>
+<ul>
+<li><strong>Econometrics.</strong> Disconnections mark structural crises; avoid trends that cross discontinuities.</li>
+<li><strong>Medicine/Neuroscience.</strong> Interventions can split regimes; test continuity before longitudinal pooling.</li>
+<li><strong>Climatology.</strong> Extreme events can sever continuity; don’t extrapolate trends across regimes. </li>
+</ul>
+</section>
+<section id="fundamental-decision-rule" class="level4">
+<h4 class="anchored" data-anchor-id="fundamental-decision-rule">4.1.6. Fundamental Decision Rule</h4>
+<ol type="1">
+<li>Global analyses: <strong>connectivity is necessary</strong> for continuous methods.</li>
+<li>Local analyses: use continuous methods <strong>within each component</strong>.</li>
+<li>Mixed: segment globally; apply local continuous tools inside each segment. </li>
+</ol>
+</section>
+<section id="conclusions-on-the-fundamental-contribution" class="level4">
+<h4 class="anchored" data-anchor-id="conclusions-on-the-fundamental-contribution">4.1.7. Conclusions On the Fundamental Contribution</h4>
+<p>topologyR transforms imputation from heuristic to <strong>mathematically grounded</strong> procedure by revealing the underlying topological structure that justifies (or forbids) continuity assumptions before application — crucial in policy, biomedical, and climate contexts. </p>
+</section>
+<section id="positioning-vs-general-purpose-tda" class="level4">
+<h4 class="anchored" data-anchor-id="positioning-vs-general-purpose-tda">4.1.8. Positioning vs General-Purpose TDA</h4>
+<p>Focus: 1D series, <strong>β₀</strong> (connectedness), explicit decision rule. Complement PH stacks (Ripser/GUDHI/TDAstats/scikit-TDA) for multi-scale/higher-β structure (no explicit imputation rule). </p>
+</section>
+<section id="limitations-and-risks" class="level4">
+<h4 class="anchored" data-anchor-id="limitations-and-risks">4.1.9. Limitations and Risks</h4>
+<ol type="1">
+<li><p><strong>Parameter Sensitivity</strong> (threshold choice) → mitigate via factor sweeps; still empirical.</p></li>
+<li><p><strong>Sampling/noise</strong> can mimic (dis)connection → treat “connected ⇒ continuous” as <strong>prima facie</strong>.</p></li>
+<li><p><strong>Expressivity</strong> limited to <strong>β₀</strong>.</p></li>
+<li><p><strong>Scalability</strong>: exhaustive builds can be <img src="https://latex.codecogs.com/png.latex?O(n%5E2)">. </p></li>
+</ol>
+</section>
+<section id="global-conclusions-practical-guidance" class="level4">
+<h4 class="anchored" data-anchor-id="global-conclusions-practical-guidance">4.1.10. Global conclusions &amp; practical guidance</h4>
+<p>Use topologyR as a <strong>pre-model governance</strong> tool for binary <strong>validity</strong> decisions; complement with PH for subtle multi-scale features that don’t break global connectedness. </p>
+</section>
+<section id="references" class="level4">
+<h4 class="anchored" data-anchor-id="references">4.1.11. References</h4>
+<p>Alvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., &amp; Strømmen, K. (2025). <em>Detecting the Indian Monsoon using Topological Data Analysis</em> (arXiv:2504.01022). https://arxiv.org/abs/2504.01022</p>
+<p>Bauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. <em>Journal of Applied and Computational Topology, 5</em>(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5</p>
+<p>Chung, M. K., et al.&nbsp;(2023). Unified topological inference for brain networks in temporal dynamics. <em>Frontiers in Neuroscience, 17</em>, 1140289. https://doi.org/10.3389/fnins.2023.1140289</p>
+<p>Flammer, M., et al.&nbsp;(2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. <em>SN Computer Science, 4</em>, 396. https://doi.org/10.1007/s42979-023-02396-7</p>
+<p>Gidea, M. (2017). <em>Topological data analysis of financial time series</em> (arXiv:1703.04385). https://arxiv.org/abs/1703.04385</p>
+<p>Guo, H., et al.&nbsp;(2020). Empirical study of financial crises based on topological data analysis. <em>Physica A: Statistical Mechanics and its Applications, 551</em>, 124198. https://doi.org/10.1016/j.physa.2019.124198</p>
+<p>Kang, Y., et al.&nbsp;(2024). High-order brain network feature extraction and characterization via persistent homology. <em>Frontiers in Neuroscience, 18</em>, 1378837. https://doi.org/10.3389/fnins.2024.1378837</p>
+<p>Kelley, J. L. (2017). <em>General topology</em> (Dover ed.; original work published 1955). Dover Publications.</p>
+<p>Maria, C., Boissonnat, J.-D., Glisse, M., &amp; Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong &amp; C. Yap (Eds.), <em>Mathematical Software – ICMS 2014</em> (pp.&nbsp;167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28</p>
+<p>Otter, N., Porter, M. A., Tillmann, U., Grindrod, P., &amp; Harrington, H. A. (2017). A roadmap for the computation of persistent homology. <em>EPJ Data Science, 6</em>, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5</p>
+<p>scikit-TDA. (n.d.). <em>scikit-TDA documentation</em>. https://docs.scikit-tda.org/</p>
+<p>Tralie, C., Saul, N., &amp; Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. <em>Journal of Open Source Software, 3</em>(29), 925. https://doi.org/10.21105/joss.00925</p>
+<p>Tymochko, S., et al.&nbsp;(2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. <em>Pattern Recognition Letters, 133</em>, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003</p>
+<p>Ver Hoef, L., et al.&nbsp;(2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. <em>AI for the Earth Systems, 2</em>(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1</p>
+<p>Wadhwa, R. R., Williamson, D. F. K., Dhawan, A., &amp; Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. <em>Journal of Open Source Software, 3</em>(28), 860. https://doi.org/10.21105/joss.00860</p>
+<p>Wang, Z., et al.&nbsp;(2023). Automatic epileptic seizure detection based on persistent homology. <em>Computational and Mathematical Methods in Medicine, 2023</em>, 9165842. https://doi.org/10.1155/2023/9165842</p>
+<p>Xu, X., Gao, Y., Zhong, S., Li, P., &amp; Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. <em>Frontiers in Neuroscience, 15</em>, 761703. https://doi.org/10.3389/fnins.2021.761703</p>
+</section>
+</section>
+</section>
+<section id="scope-typical-use-cases" class="level2">
+<h2 class="anchored" data-anchor-id="scope-typical-use-cases">5. Scope &amp; Typical Use Cases</h2>
+<ul>
+<li><strong>Economic &amp; other time series</strong>: connectivity regimes, structural breaks.</li>
+<li><strong>Signal/biological data</strong>: neighborhood graphs, coverage checks.</li>
+<li><strong>Didactic</strong>: bases/subbases, topology construction, graph↔︎topology bridges. </li>
+</ul>
+</section>
+<section id="design-principles" class="level2">
+<h2 class="anchored" data-anchor-id="design-principles">6. Design Principles</h2>
+<p>Correctness (include ∅ and <img src="https://latex.codecogs.com/png.latex?X">; track coverage), transparency (step-wise functions), explorability (fast heuristics &amp; visuals for threshold selection). </p>
+</section>
+<section id="technical-approach-algorithms-connectivity-engines" class="level2">
+<h2 class="anchored" data-anchor-id="technical-approach-algorithms-connectivity-engines">7. Technical Approach: Algorithms &amp; Connectivity Engines</h2>
+<p><strong>Core Algorithm</strong> and <strong>Methods</strong> (undirected DFS; directed sequential DFS; manual coverage) as sketched in §3 above. </p>
+<p><strong>Connectivity Functions (Package Internals).</strong></p>
+<ul>
+<li><p><code>is_topology_connected()</code> builds a symmetric adjacency from set co-membership and runs DFS over present elements.</p></li>
+<li><p><code>is_topology_connected2()</code> directs edges along sorted, consecutive elements within each set and DFSs from the minimum.</p></li>
+<li><p><code>is_topology_connected_manual()</code> checks whether each original index 1..n appears in at least one set. </p></li>
+</ul>
+</section>
+<section id="api-at-a-glance-quick-start" class="level2">
+<h2 class="anchored" data-anchor-id="api-at-a-glance-quick-start">8. API at A Glance (Quick Start)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(topologyR)</span>
+<span id="cb2-2"></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Small example vector</span></span>
+<span id="cb2-4">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span>
+<span id="cb2-5"></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Build a complete topology and check connectivity</span></span>
+<span id="cb2-7">topo     <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">complete_topology</span>(x)</span>
+<span id="cb2-8">undirected <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-9">directed   <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected2</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-10">manual     <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected_manual</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-11"></span>
+<span id="cb2-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Threshold exploration and factor sweep</span></span>
+<span id="cb2-13">ths <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb2-14">res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>))</span>
+<span id="cb2-15">viz <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">visualize_topology_thresholds</span>(x)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># optional visuals</span></span></code></pre></div></div>
+</section>
+<section id="threshold-heuristics-factor-sweep" class="level2">
+<h2 class="anchored" data-anchor-id="threshold-heuristics-factor-sweep">9. Threshold Heuristics &amp; Factor Sweep</h2>
+<p>You can derive τ from <strong>mean/median adjacent differences</strong>, <strong>SD</strong>, <strong>IQR / factor</strong>, or a <strong>DBSCAN-like</strong> heuristic; then run an <strong>IQR-factor sweep</strong> (e.g., 1, 2, 4, 8, 16) and track <strong>base size / set sizes</strong> to pick a stable regime. </p>
+<p>Internally, the factor sweep computes <img src="https://latex.codecogs.com/png.latex?%5Ctau=%5Cmathrm%7BIQR%7D(x)/f">, builds subbases, forms the base (with ∅ and <img src="https://latex.codecogs.com/png.latex?X">), and summarizes base size and min/max set sizes per <img src="https://latex.codecogs.com/png.latex?f">. </p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb3-2">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cumsum</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rnorm</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>))</span>
+<span id="cb3-3"></span>
+<span id="cb3-4">ths  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb3-5">resf <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)</span>
+<span id="cb3-6"></span>
+<span id="cb3-7"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span>(ths)</span>
+<span id="cb3-8"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span>(resf)</span></code></pre></div></div>
+</section>
+<section id="performance-scalability" class="level2">
+<h2 class="anchored" data-anchor-id="performance-scalability">10. Performance &amp; Scalability</h2>
+<p>Exact neighborhood/base construction can grow as <img src="https://latex.codecogs.com/png.latex?O(n%5E2)">; prefer robust thresholds + factor sweeps, and consider down-sampling beyond moderate <img src="https://latex.codecogs.com/png.latex?n">. For first-pass diagnostics on very large data, use the <strong>manual coverage</strong> check and then refine with directed DFS as needed. </p>
+</section>
+<section id="limitations-validity-notes" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-validity-notes">11. Limitations &amp; Validity Notes</h2>
+<ul>
+<li><p><strong>Threshold Sensitivity</strong>: false (dis)connections if τ is mis-set → mitigate with grids, but keep domain judgment.</p></li>
+<li><p><strong>Sampling/noise</strong>: sparse sampling may mimic disconnections; light overlaps may mimic connection → treat “connected ⇒ continuous” as <strong>prima facie</strong>, not absolute.</p></li>
+<li><p><strong>Expressivity</strong>: emphasis on <strong>β₀</strong>; higher-order features require PH stacks.</p></li>
+<li><p><strong>Assumptions</strong>: sequential indices 1..n; very large topologies can be memory-intensive. </p></li>
+</ul>
+</section>
+<section id="end-to-end-example-imputation-decision" class="level2">
+<h2 class="anchored" data-anchor-id="end-to-end-example-imputation-decision">12. End-To-End Example: Imputation Decision</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(topologyR)</span>
+<span id="cb4-2">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.numeric</span>(AirPassengers)</span>
+<span id="cb4-3"></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Transparent, robust default for τ and illustrative factor sweep</span></span>
+<span id="cb4-5">ths  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb4-6">res  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)</span>
+<span id="cb4-7"></span>
+<span id="cb4-8">tau  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">IQR</span>(x)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span></span>
+<span id="cb4-9">topo <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">complete_topology</span>(x)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># for small n; otherwise use thresholded subbases</span></span>
+<span id="cb4-10"></span>
+<span id="cb4-11">is_conn <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb4-12"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (is_conn) {</span>
+<span id="cb4-13">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">message</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Connected: using global continuous imputation."</span>)</span>
+<span id="cb4-14">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># e.g., stats::spline(...), global kriging, smoothers</span></span>
+<span id="cb4-15">} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> {</span>
+<span id="cb4-16">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">message</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Disconnected: segment-wise imputation &amp; regime models."</span>)</span>
+<span id="cb4-17">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># split by connected components; impute/model per segment</span></span>
+<span id="cb4-18">}</span></code></pre></div></div>
+</section>
+<section id="positioning-vs.-general-purpose-tda" class="level2">
+<h2 class="anchored" data-anchor-id="positioning-vs.-general-purpose-tda">13. Positioning vs.&nbsp;General-Purpose TDA</h2>
+<p>topologyR is a <strong>focused</strong>, decision-oriented pre-model tool for <strong>1D series</strong> (β₀/connectedness). For multi-scale/higher-β structure or early-warning signals, complement with <strong>Ripser/GUDHI/TDAstats/scikit-TDA</strong>. </p>
+<p><em>(Key external sources listed in the Wiki’s references subsection 4.1.11. of the library)</em> </p>
+</section>
+<section id="installation" class="level2">
+<h2 class="anchored" data-anchor-id="installation">14. Installation</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">remotes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install_github</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"IsadoreNabi/topologyR"</span>)</span>
+<span id="cb5-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># or local build</span></span>
+<span id="cb5-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># setwd("/path/to/topologyR"); library(devtools); library(roxygen2); document(); install()</span></span></code></pre></div></div>
+</section>
+<section id="license-and-author" class="level2">
+<h2 class="anchored" data-anchor-id="license-and-author">15. License and Author</h2>
+<p><strong>LICENSE:</strong> MIT License — see LICENSE in the repository.</p>
+<p><strong>AUTHOR:</strong> José Mauricio Gómez Julián.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>topology</category>
+  <category>time-series</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR/</guid>
+  <pubDate>Thu, 18 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR-esp/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="problema-y-motivación-una-salvaguarda-basada-en-topología" class="level2">
+<h2 class="anchored" data-anchor-id="problema-y-motivación-una-salvaguarda-basada-en-topología">1. Problema y Motivación: Una Salvaguarda Basada en Topología</h2>
+<p>Muchos flujos de trabajo saltan directamente al suavizado, imputación o estimación de tendencias globales <strong>sin</strong> verificar si los datos se comportan como un sistema conectado único. <strong>topologyR</strong> eleva la información métrica local (distancias adyacentes) a vecindarios → base → topología completa, y luego plantea una pregunta decisiva: <em>¿La topología inducida está conectada?</em> Si la respuesta es <strong>sí</strong>, las suposiciones de continuidad global están respaldadas; si es <strong>no</strong>, debes <strong>segmentar</strong> y analizar los componentes por separado. Esta es la salvaguarda central y la propuesta de valor del paquete.</p>
+<p>Concretamente, topologyR proporciona un pipeline para: (i) construir subbases/bases a partir de datos numéricos con umbrales ajustables, (ii) derivar la topología inducida y cuantificar su complejidad, (iii) ejecutar verificaciones de conectividad no dirigida/dirigida/de cobertura, y (iv) explorar cómo las elecciones de umbral cambian la estructura.</p>
+</section>
+<section id="definiciones-formales" class="level2">
+<h2 class="anchored" data-anchor-id="definiciones-formales">2. Definiciones Formales</h2>
+<p><strong>Espacio topológico.</strong> Dado un conjunto <img src="https://latex.codecogs.com/png.latex?X">, una topología <img src="https://latex.codecogs.com/png.latex?%5Ctau"> sobre <img src="https://latex.codecogs.com/png.latex?X"> es una familia de subconjuntos (los conjuntos <em>abiertos</em>) que contiene <img src="https://latex.codecogs.com/png.latex?%5Cemptyset"> y <img src="https://latex.codecogs.com/png.latex?X"> y está cerrada bajo uniones arbitrarias e intersecciones finitas; <img src="https://latex.codecogs.com/png.latex?(X,%5Ctau)"> es un <strong>espacio topológico</strong>.</p>
+<p><strong>Base y subbase (intuitivo).</strong> A partir de los datos, formamos <strong>vecindarios</strong> bajo un umbral <img src="https://latex.codecogs.com/png.latex?%5Ctau"> (¡no la topología!), tomamos <strong>intersecciones finitas</strong> para formar una <strong>base</strong>, y a partir de uniones de elementos de la base obtenemos la <strong>topología completa</strong>. En topologyR esto se hace explícitamente desde un vector numérico.</p>
+<p><strong>Conectividad (β₀).</strong> Estudiamos si la topología inducida conecta todos los índices presentes bajo alcanzabilidad no dirigida o dirigida, o al menos <strong>cubre</strong> todos los índices (verificación manual).</p>
+</section>
+<section id="pipeline-de-topologyr-qué-construye-el-paquete-para-ti" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline-de-topologyr-qué-construye-el-paquete-para-ti">3. Pipeline de topologyR: ¿Qué construye el paquete para ti?</h2>
+<ol type="1">
+<li><p><strong>Vecindarios</strong> bajo un umbral ajustable (ej., basado en IQR)</p></li>
+<li><p><strong>Base</strong> mediante intersecciones (incluir conjuntos vacío/completo para corrección)</p></li>
+<li><p><strong>Topología completa</strong> a partir de la base (clausura bajo uniones/intersecciones finitas)</p></li>
+<li><p><strong>Verificaciones de conectividad</strong>: DFS no dirigido, DFS dirigido, cobertura manual</p></li>
+<li><p><strong>Exploración de umbrales</strong> (diferencias media/mediana, SD, IQR/factor, similar a DBSCAN) y resúmenes/gráficos de <strong>barrido de factores</strong></p></li>
+</ol>
+<p>Un bosquejo R compacto del algoritmo central aparece a continuación (el paquete implementa una versión robusta):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Vecindarios bajo τ</span></span>
+<span id="cb1-2">subbase <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">lapply</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x), <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(i) <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">which</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">abs</span>(x <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> x[i]) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> τ))</span>
+<span id="cb1-3"></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Base: incluir ∅ y X</span></span>
+<span id="cb1-5">base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">integer</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x))</span>
+<span id="cb1-6"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> (i <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">seq_along</span>(x)) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> (j <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> i<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(x)) {</span>
+<span id="cb1-7">  S <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">intersect</span>(subbase[[i]], subbase[[j]])</span>
+<span id="cb1-8">  <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">length</span>(S) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>) base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(base, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">list</span>(S))</span>
+<span id="cb1-9">}</span>
+<span id="cb1-10">base <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">unique</span>(base)</span>
+<span id="cb1-11"></span>
+<span id="cb1-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># De la base -&gt; topología (uniones/intersecciones finitas)</span></span>
+<span id="cb1-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Verificaciones de conectividad:</span></span>
+<span id="cb1-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected(topology)         # DFS no dirigido</span></span>
+<span id="cb1-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected2(topology)        # DFS dirigido (secuencial)</span></span>
+<span id="cb1-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># is_topology_connected_manual(topology)  # cobertura 1..n</span></span></code></pre></div></div>
+</section>
+<section id="innovación-clave" class="level2">
+<h2 class="anchored" data-anchor-id="innovación-clave">4. Innovación Clave</h2>
+<section id="revelando-invariantes-topológicos-para-validar-métodos-de-imputación" class="level3">
+<h3 class="anchored" data-anchor-id="revelando-invariantes-topológicos-para-validar-métodos-de-imputación">4.1. Revelando Invariantes Topológicos para Validar Métodos de Imputación</h3>
+<section id="introducción-el-problema-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="introducción-el-problema-fundamental">4.1.1. Introducción: El Problema Fundamental</h4>
+<p>A menudo asumimos continuidad global (suavizado, kriging, splines, etc.) <strong>antes</strong> de verificar si la continuidad es siquiera matemáticamente defendible. topologyR arregla esto elevando las distancias locales a una topología y leyendo invariantes (notablemente <strong>conectividad</strong>) que deciden la validez del método.</p>
+</section>
+<section id="fundamentos-conceptuales" class="level4">
+<h4 class="anchored" data-anchor-id="fundamentos-conceptuales">4.1.2. Fundamentos Conceptuales</h4>
+<p><strong>4.1.2.1. La Naturaleza del Problema.</strong> Los datos secuenciales ocultan propiedades globales críticas para la elección de método: conectividad del sistema, complejidad estructural y puntos de quiebre que pueden invalidar la continuidad. Estos no son visibles solo a partir de distancias por pares.</p>
+<p><strong>4.1.2.2. La Solución Topológica.</strong></p>
+<ol type="1">
+<li>Proximidad métrica → <strong>relaciones de vecindario</strong></li>
+<li>Vecindarios → <strong>subbase</strong></li>
+<li>Intersecciones/uniones → <strong>base</strong> y <strong>topología completa</strong></li>
+<li>Topología → <strong>invariantes</strong> (conectividad) que gobiernan la validez del método.</li>
+</ol>
+</section>
+<section id="el-marco-teórico-conectividad-validez-del-método" class="level4">
+<h4 class="anchored" data-anchor-id="el-marco-teórico-conectividad-validez-del-método">4.1.3. El Marco Teórico: Conectividad ⇒ Validez del Método</h4>
+<p><strong>Caso I: Topología Conectada.</strong> Válido usar métodos continuos globales (interpolación polinomial/lineal, splines cúbicos, kriging/geoestadística, promedios móviles, kernels continuos), asumiendo muestreo/ruido adecuado.</p>
+<p><strong>Caso II: Topología desconectada.</strong> La continuidad global es inválida; debes cambiar a enfoques <strong>por segmentos</strong> o <strong>regímenes</strong> (imputación independiente por componente, cambio de régimen, condicional por segmento, hot-deck dentro del componente, mezclas finitas).</p>
+</section>
+<section id="propiedades-globales-vs-locales" class="level4">
+<h4 class="anchored" data-anchor-id="propiedades-globales-vs-locales">4.1.4. Propiedades Globales vs Locales</h4>
+<p>Las propiedades <strong>globales</strong> (medias de período completo, tendencia secular, volatilidad sistémica, estructura de ciclos, cointegración, memoria larga, sincronía neural global, tendencias climáticas centenarias, patrones de circulación) <strong>requieren</strong> conectividad; una topología desconectada invalida la imputación continua global a través del quiebre. Las propiedades <strong>locales</strong> (volatilidad de ventana corta, derivadas locales, agrupamiento local, AR(1)/AR(2) en rezagos cortos, puntos de inflexión locales, espectros de segmento corto) pueden analizarse por componente independientemente de la conectividad global.</p>
+</section>
+<section id="aplicaciones-críticas-por-dominio" class="level4">
+<h4 class="anchored" data-anchor-id="aplicaciones-críticas-por-dominio">4.1.5. Aplicaciones Críticas por Dominio</h4>
+<ul>
+<li><strong>Econometría.</strong> Las desconexiones marcan crisis estructurales; evitar tendencias que crucen discontinuidades.</li>
+<li><strong>Medicina/Neurociencia.</strong> Las intervenciones pueden dividir regímenes; probar continuidad antes del agrupamiento longitudinal.</li>
+<li><strong>Climatología.</strong> Los eventos extremos pueden cortar la continuidad; no extrapolar tendencias a través de regímenes.</li>
+</ul>
+</section>
+<section id="regla-de-decisión-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="regla-de-decisión-fundamental">4.1.6. Regla de Decisión Fundamental</h4>
+<ol type="1">
+<li>Análisis globales: <strong>la conectividad es necesaria</strong> para métodos continuos.</li>
+<li>Análisis locales: usar métodos continuos <strong>dentro de cada componente</strong>.</li>
+<li>Mixto: segmentar globalmente; aplicar herramientas continuas locales dentro de cada segmento.</li>
+</ol>
+</section>
+<section id="conclusiones-sobre-la-contribución-fundamental" class="level4">
+<h4 class="anchored" data-anchor-id="conclusiones-sobre-la-contribución-fundamental">4.1.7. Conclusiones Sobre la Contribución Fundamental</h4>
+<p>topologyR transforma la imputación de procedimiento heurístico a <strong>matemáticamente fundamentado</strong> revelando la estructura topológica subyacente que justifica (o prohíbe) las suposiciones de continuidad antes de la aplicación — crucial en contextos de políticas, biomédicos y climáticos.</p>
+</section>
+<section id="posicionamiento-vs-tda-de-propósito-general" class="level4">
+<h4 class="anchored" data-anchor-id="posicionamiento-vs-tda-de-propósito-general">4.1.8. Posicionamiento vs TDA de Propósito General</h4>
+<p>Enfoque: series 1D, <strong>β₀</strong> (conectividad), regla de decisión explícita. Complementa pilas PH (Ripser/GUDHI/TDAstats/scikit-TDA) para estructura multi-escala/β superior (sin regla de imputación explícita).</p>
+</section>
+<section id="limitaciones-y-riesgos" class="level4">
+<h4 class="anchored" data-anchor-id="limitaciones-y-riesgos">4.1.9. Limitaciones y Riesgos</h4>
+<ol type="1">
+<li><p><strong>Sensibilidad de Parámetros</strong> (elección de umbral) → mitigar mediante barridos de factores; aún empírico.</p></li>
+<li><p><strong>Muestreo/ruido</strong> puede simular (des)conexión → tratar “conectado ⇒ continuo” como <strong>prima facie</strong>.</p></li>
+<li><p><strong>Expresividad</strong> limitada a <strong>β₀</strong>.</p></li>
+<li><p><strong>Escalabilidad</strong>: construcciones exhaustivas pueden ser <img src="https://latex.codecogs.com/png.latex?O(n%5E2)">.</p></li>
+</ol>
+</section>
+<section id="conclusiones-globales-y-orientación-práctica" class="level4">
+<h4 class="anchored" data-anchor-id="conclusiones-globales-y-orientación-práctica">4.1.10. Conclusiones Globales y Orientación Práctica</h4>
+<p>Usar topologyR como una herramienta de <strong>gobernanza pre-modelo</strong> para decisiones binarias de <strong>validez</strong>; complementar con PH para características multi-escala sutiles que no rompen la conectividad global.</p>
+</section>
+<section id="referencias" class="level4">
+<h4 class="anchored" data-anchor-id="referencias">4.1.11. Referencias</h4>
+<p>Alvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., &amp; Strømmen, K. (2025). <em>Detecting the Indian Monsoon using Topological Data Analysis</em> (arXiv:2504.01022). https://arxiv.org/abs/2504.01022</p>
+<p>Bauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. <em>Journal of Applied and Computational Topology, 5</em>(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5</p>
+<p>Chung, M. K., et al.&nbsp;(2023). Unified topological inference for brain networks in temporal dynamics. <em>Frontiers in Neuroscience, 17</em>, 1140289. https://doi.org/10.3389/fnins.2023.1140289</p>
+<p>Flammer, M., et al.&nbsp;(2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. <em>SN Computer Science, 4</em>, 396. https://doi.org/10.1007/s42979-023-02396-7</p>
+<p>Gidea, M. (2017). <em>Topological data analysis of financial time series</em> (arXiv:1703.04385). https://arxiv.org/abs/1703.04385</p>
+<p>Guo, H., et al.&nbsp;(2020). Empirical study of financial crises based on topological data analysis. <em>Physica A: Statistical Mechanics and its Applications, 551</em>, 124198. https://doi.org/10.1016/j.physa.2019.124198</p>
+<p>Kang, Y., et al.&nbsp;(2024). High-order brain network feature extraction and characterization via persistent homology. <em>Frontiers in Neuroscience, 18</em>, 1378837. https://doi.org/10.3389/fnins.2024.1378837</p>
+<p>Kelley, J. L. (2017). <em>General topology</em> (Dover ed.; original work published 1955). Dover Publications.</p>
+<p>Maria, C., Boissonnat, J.-D., Glisse, M., &amp; Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong &amp; C. Yap (Eds.), <em>Mathematical Software – ICMS 2014</em> (pp.&nbsp;167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28</p>
+<p>Otter, N., Porter, M. A., Tillmann, U., Grindrod, P., &amp; Harrington, H. A. (2017). A roadmap for the computation of persistent homology. <em>EPJ Data Science, 6</em>, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5</p>
+<p>scikit-TDA. (n.d.). <em>scikit-TDA documentation</em>. https://docs.scikit-tda.org/</p>
+<p>Tralie, C., Saul, N., &amp; Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. <em>Journal of Open Source Software, 3</em>(29), 925. https://doi.org/10.21105/joss.00925</p>
+<p>Tymochko, S., et al.&nbsp;(2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. <em>Pattern Recognition Letters, 133</em>, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003</p>
+<p>Ver Hoef, L., et al.&nbsp;(2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. <em>AI for the Earth Systems, 2</em>(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1</p>
+<p>Wadhwa, R. R., Williamson, D. F. K., Dhawan, A., &amp; Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. <em>Journal of Open Source Software, 3</em>(28), 860. https://doi.org/10.21105/joss.00860</p>
+<p>Wang, Z., et al.&nbsp;(2023). Automatic epileptic seizure detection based on persistent homology. <em>Computational and Mathematical Methods in Medicine, 2023</em>, 9165842. https://doi.org/10.1155/2023/9165842</p>
+<p>Xu, X., Gao, Y., Zhong, S., Li, P., &amp; Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. <em>Frontiers in Neuroscience, 15</em>, 761703. https://doi.org/10.3389/fnins.2021.761703</p>
+</section>
+</section>
+</section>
+<section id="alcance-y-casos-de-uso-típicos" class="level2">
+<h2 class="anchored" data-anchor-id="alcance-y-casos-de-uso-típicos">5. Alcance y Casos de Uso Típicos</h2>
+<ul>
+<li><strong>Series temporales económicas y otras</strong>: regímenes de conectividad, quiebres estructurales.</li>
+<li><strong>Datos de señales/biológicos</strong>: grafos de vecindario, verificaciones de cobertura.</li>
+<li><strong>Didáctico</strong>: bases/subbases, construcción de topología, puentes grafo↔︎topología.</li>
+</ul>
+</section>
+<section id="principios-de-diseño" class="level2">
+<h2 class="anchored" data-anchor-id="principios-de-diseño">6. Principios de Diseño</h2>
+<p>Corrección (incluir ∅ y <img src="https://latex.codecogs.com/png.latex?X">; rastrear cobertura), transparencia (funciones paso a paso), explorabilidad (heurísticas rápidas y visuales para selección de umbrales).</p>
+</section>
+<section id="enfoque-técnico-algoritmos-y-motores-de-conectividad" class="level2">
+<h2 class="anchored" data-anchor-id="enfoque-técnico-algoritmos-y-motores-de-conectividad">7. Enfoque Técnico: Algoritmos y Motores de Conectividad</h2>
+<p><strong>Algoritmo Central</strong> y <strong>Métodos</strong> (DFS no dirigido; DFS secuencial dirigido; cobertura manual) como se bosqueja en §3 arriba.</p>
+<p><strong>Funciones de Conectividad (Internos del Paquete).</strong></p>
+<ul>
+<li><p><code>is_topology_connected()</code> construye una adyacencia simétrica a partir de co-pertenencia de conjuntos y ejecuta DFS sobre elementos presentes.</p></li>
+<li><p><code>is_topology_connected2()</code> dirige aristas a lo largo de elementos ordenados y consecutivos dentro de cada conjunto y hace DFS desde el mínimo.</p></li>
+<li><p><code>is_topology_connected_manual()</code> verifica si cada índice original 1..n aparece en al menos un conjunto.</p></li>
+</ul>
+</section>
+<section id="api-de-un-vistazo-inicio-rápido" class="level2">
+<h2 class="anchored" data-anchor-id="api-de-un-vistazo-inicio-rápido">8. API de un Vistazo (Inicio Rápido)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(topologyR)</span>
+<span id="cb2-2"></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Vector de ejemplo pequeño</span></span>
+<span id="cb2-4">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span>
+<span id="cb2-5"></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Construir una topología completa y verificar conectividad</span></span>
+<span id="cb2-7">topo     <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">complete_topology</span>(x)</span>
+<span id="cb2-8">undirected <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-9">directed   <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected2</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-10">manual     <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected_manual</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb2-11"></span>
+<span id="cb2-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Exploración de umbrales y barrido de factores</span></span>
+<span id="cb2-13">ths <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb2-14">res <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>))</span>
+<span id="cb2-15">viz <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">visualize_topology_thresholds</span>(x)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># visuales opcionales</span></span></code></pre></div></div>
+</section>
+<section id="heurísticas-de-umbral-y-barrido-de-factores" class="level2">
+<h2 class="anchored" data-anchor-id="heurísticas-de-umbral-y-barrido-de-factores">9. Heurísticas de Umbral y Barrido de Factores</h2>
+<p>Puedes derivar τ de <strong>diferencias adyacentes media/mediana</strong>, <strong>SD</strong>, <strong>IQR / factor</strong>, o una heurística <strong>similar a DBSCAN</strong>; luego ejecutar un <strong>barrido de factor IQR</strong> (ej., 1, 2, 4, 8, 16) y rastrear <strong>tamaño de base / tamaños de conjuntos</strong> para elegir un régimen estable.</p>
+<p>Internamente, el barrido de factores calcula <img src="https://latex.codecogs.com/png.latex?%5Ctau=%5Cmathrm%7BIQR%7D(x)/f">, construye subbases, forma la base (con ∅ y <img src="https://latex.codecogs.com/png.latex?X">), y resume el tamaño de base y tamaños mín/máx de conjuntos por <img src="https://latex.codecogs.com/png.latex?f">.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb3-2">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">cumsum</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">rnorm</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>))</span>
+<span id="cb3-3"></span>
+<span id="cb3-4">ths  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb3-5">resf <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)</span>
+<span id="cb3-6"></span>
+<span id="cb3-7"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span>(ths)</span>
+<span id="cb3-8"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">print</span>(resf)</span></code></pre></div></div>
+</section>
+<section id="rendimiento-y-escalabilidad" class="level2">
+<h2 class="anchored" data-anchor-id="rendimiento-y-escalabilidad">10. Rendimiento y Escalabilidad</h2>
+<p>La construcción exacta de vecindarios/base puede crecer como <img src="https://latex.codecogs.com/png.latex?O(n%5E2)">; prefiere umbrales robustos + barridos de factores, y considera submuestreo más allá de <img src="https://latex.codecogs.com/png.latex?n"> moderado. Para diagnósticos de primera pasada en datos muy grandes, usa la verificación de <strong>cobertura manual</strong> y luego refina con DFS dirigido según sea necesario.</p>
+</section>
+<section id="limitaciones-y-notas-de-validez" class="level2">
+<h2 class="anchored" data-anchor-id="limitaciones-y-notas-de-validez">11. Limitaciones y Notas de Validez</h2>
+<ul>
+<li><p><strong>Sensibilidad de Umbral</strong>: falsas (des)conexiones si τ está mal configurado → mitigar con rejillas, pero mantener juicio del dominio.</p></li>
+<li><p><strong>Muestreo/ruido</strong>: el muestreo escaso puede simular desconexiones; las superposiciones ligeras pueden simular conexión → tratar “conectado ⇒ continuo” como <strong>prima facie</strong>, no absoluto.</p></li>
+<li><p><strong>Expresividad</strong>: énfasis en <strong>β₀</strong>; características de orden superior requieren pilas PH.</p></li>
+<li><p><strong>Suposiciones</strong>: índices secuenciales 1..n; topologías muy grandes pueden ser intensivas en memoria.</p></li>
+</ul>
+</section>
+<section id="ejemplo-completo-decisión-de-imputación" class="level2">
+<h2 class="anchored" data-anchor-id="ejemplo-completo-decisión-de-imputación">12. Ejemplo Completo: Decisión de Imputación</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(topologyR)</span>
+<span id="cb4-2">x <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">as.numeric</span>(AirPassengers)</span>
+<span id="cb4-3"></span>
+<span id="cb4-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Predeterminado transparente y robusto para τ y barrido de factores ilustrativo</span></span>
+<span id="cb4-5">ths  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">calculate_thresholds</span>(x)</span>
+<span id="cb4-6">res  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">analyze_topology_factors</span>(x, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">factors =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">plot =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>)</span>
+<span id="cb4-7"></span>
+<span id="cb4-8">tau  <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">IQR</span>(x)<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span></span>
+<span id="cb4-9">topo <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">complete_topology</span>(x)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># para n pequeño; de lo contrario usar subbases con umbral</span></span>
+<span id="cb4-10"></span>
+<span id="cb4-11">is_conn <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">is_topology_connected</span>(topo<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>topology)</span>
+<span id="cb4-12"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (is_conn) {</span>
+<span id="cb4-13">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">message</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Conectado: usando imputación continua global."</span>)</span>
+<span id="cb4-14">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ej., stats::spline(...), kriging global, suavizadores</span></span>
+<span id="cb4-15">} <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> {</span>
+<span id="cb4-16">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">message</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Desconectado: imputación por segmentos y modelos de régimen."</span>)</span>
+<span id="cb4-17">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># dividir por componentes conectados; imputar/modelar por segmento</span></span>
+<span id="cb4-18">}</span></code></pre></div></div>
+</section>
+<section id="posicionamiento-vs.-tda-de-propósito-general" class="level2">
+<h2 class="anchored" data-anchor-id="posicionamiento-vs.-tda-de-propósito-general">13. Posicionamiento vs.&nbsp;TDA de Propósito General</h2>
+<p>topologyR es una herramienta pre-modelo <strong>enfocada</strong> y orientada a decisiones para <strong>series 1D</strong> (β₀/conectividad). Para estructura multi-escala/β superior o señales de alerta temprana, complementar con <strong>Ripser/GUDHI/TDAstats/scikit-TDA</strong>.</p>
+<p><em>(Fuentes externas clave listadas en la subsección de referencias 4.1.11. de la wiki de la biblioteca)</em></p>
+</section>
+<section id="instalación" class="level2">
+<h2 class="anchored" data-anchor-id="instalación">14. Instalación</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">remotes<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">::</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install_github</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"IsadoreNabi/topologyR"</span>)</span>
+<span id="cb5-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># o construcción local</span></span>
+<span id="cb5-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># setwd("/path/to/topologyR"); library(devtools); library(roxygen2); document(); install()</span></span></code></pre></div></div>
+</section>
+<section id="licencia-y-autor" class="level2">
+<h2 class="anchored" data-anchor-id="licencia-y-autor">15. Licencia y Autor</h2>
+<p><strong>LICENCIA:</strong> Licencia MIT — ver LICENSE en el repositorio.</p>
+<p><strong>AUTOR:</strong> José Mauricio Gómez Julián.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>topología</category>
+  <category>series-temporales</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR-esp/</guid>
+  <pubDate>Thu, 18 Sep 2025 06:00:00 GMT</pubDate>
+</item>
 <item>
   <title>BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW</title>
   <dc:creator>José Mauricio Gómez Julián</dc:creator>
@@ -778,6 +1822,650 @@ font-style: inherit;">$</span>metrics</span></code></pre></div></div>
   <category>packages</category>
   <category>Bayesian</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-desagregacion-bayesiana/</guid>
+  <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>EconCausal: Bayesian &amp; Econometric Tools for Predictive Causality</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<blockquote class="blockquote">
+<p>This article presents the <strong>EconCausal</strong> library: a compact toolkit for <strong>predictive causal assessment</strong> between production and circulation variables with <strong>time-aware validation</strong>. The library exposes three engines—(1) Bayesian GLM with AR(1) errors, (2) Bayesian State-Space (BSTS) with spike-and-slab selection, and (3) an ECM enhanced with MARS—so practitioners can trade off structural transparency, predictive sharpness, and computational cost while keeping evaluation on out-of-sample grounds.</p>
+</blockquote>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">1. Overview</h2>
+<p>EconCausal implements a <strong>diagnostics-first</strong> workflow. Each engine is paired with <strong>Leave-Future-Out (LFO)</strong> rolling evaluation, reporting <strong>Expected Log Predictive Density (ELPD)</strong> alongside classical error metrics. Stability is summarized as <strong>support</strong>, i.e., the fraction of rolling folds where the full model <strong>wins</strong> against a strict baseline.</p>
+<section id="why-three-engines" class="level3">
+<h3 class="anchored" data-anchor-id="why-three-engines">Why three engines?</h3>
+<ul>
+<li><strong>GLM-AR(1)</strong>: fast Bayesian regression with AR(1) errors; ideal when a small set of lags is economically motivated and serial correlation must be handled explicitly.</li>
+<li><strong>BSTS + spike-and-slab</strong>: structural trend/level (and optional seasonality) with automatic predictor selection; strongest when <strong>decomposition</strong> and <strong>calibrated intervals</strong> matter.</li>
+<li><strong>ECM + MARS</strong>: hybrid frequentist benchmark for <strong>cointegrated</strong> pairs that may exhibit <strong>nonlinear</strong> short-run corrections.</li>
+</ul>
+<p>The three are deliberately different: <strong>parametric Bayesian</strong>, <strong>structural Bayesian</strong>, and <strong>hybrid frequentist</strong>—so results can be triangulated across assumptions.</p>
+</section>
+</section>
+<section id="engines" class="level2">
+<h2 class="anchored" data-anchor-id="engines">2. Engines</h2>
+<section id="bayesian-glm-with-ar1-errors-bglm-ar1" class="level3">
+<h3 class="anchored" data-anchor-id="bayesian-glm-with-ar1-errors-bglm-ar1">2.1. Bayesian GLM with AR(1) Errors (BGLM-AR1)</h3>
+<p><strong>Model.</strong> The standardized outcome <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,s%7D"> is regressed on a standardized time index <img src="https://latex.codecogs.com/png.latex?t_s"> and standardized lags of <img src="https://latex.codecogs.com/png.latex?X">, with AR(1) residuals:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AY_%7Bt,s%7D=%5Calpha+%5Cbeta_0%20t_s+%5Csum_%7Bi=1%7D%5EL%20%5Cbeta_i%20X_%7Bt-i,s%7D+%5Cepsilon_t,%5Cquad%20%5Cepsilon_t=%5Cphi%20%5Cepsilon_%7Bt-1%7D+%5Ceta_t.%0A"></p>
+<p>Standardization is critical for efficient HMC/NUTS.</p>
+<p><strong>Baseline.</strong> <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,s%7D%5Csim%201+t_s+%5Ctext%7BAR(1)%7D"> provides the <strong>null</strong> without <img src="https://latex.codecogs.com/png.latex?X">-information for strict OOS comparisons.</p>
+<p><strong>Priors.</strong> Weakly informative: <img src="https://latex.codecogs.com/png.latex?%5Cbeta%5Csim%20N(0,1)">, <img src="https://latex.codecogs.com/png.latex?%5Calpha%5Csim%20t_3(0,2.5)">, <img src="https://latex.codecogs.com/png.latex?%5Csigma%5Csim%5Ctext%7BExp%7D(1)">; <img src="https://latex.codecogs.com/png.latex?%5Cphi%5Cin(-1,1)">.</p>
+<p><strong>Sampling &amp; diagnostics.</strong> 4 chains, 1500 iters, warmup 750, <code>adapt_delta=0.95</code>, <code>max_treedepth=12</code>; R-hat &lt; 1.01, ESS &gt; 400, zero/few divergences.</p>
+<p><strong>Temporal validation.</strong> LFO with <strong>sliding</strong> window; a fold is a <strong>victory</strong> if <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD &gt; 0 <strong>and</strong> RMSE decreases. Support = wins / folds. Thresholds: <strong>0.70</strong> (strict), <strong>0.60</strong> (moderate).</p>
+<p><strong>Function.</strong> <code>bglmar1()</code> orchestrates the entire pipeline (I/O, scaling per-fold, AR(1) fits via <code>brms/cmdstanr</code>, metrics, ranking, and CSV export). Key arguments include <code>max_lag</code>, <code>initial_frac</code>, <code>initial_min</code>, <code>test_h</code>, <code>step_h</code>, and MCMC controls.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Example (disabled for speed)</span></span>
+<span id="cb1-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># result &lt;- bglmar1(</span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "path/to/data.xlsx",</span></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",</span></span>
+<span id="cb1-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "IPC","TdI_LdelT","TasaDescuento"),</span></span>
+<span id="cb1-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("ValorExportaciones","Real_Net_Profit",</span></span>
+<span id="cb1-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",</span></span>
+<span id="cb1-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",</span></span>
+<span id="cb1-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "InvestmentPerWorker_PPP2017"),</span></span>
+<span id="cb1-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   max_lag = 3, test_h = 12, step_h = 12</span></span>
+<span id="cb1-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+<section id="bayesian-structural-time-series-with-spike-and-slab-bsts" class="level3">
+<h3 class="anchored" data-anchor-id="bayesian-structural-time-series-with-spike-and-slab-bsts">2.2. Bayesian Structural Time Series with Spike-and-Slab (BSTS)</h3>
+<p><strong>Framework.</strong> Two-equation state-space:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7Bobs:%20%7D%20y_t%20=%20Z_t'%20%5Calpha_t%20+%20%5Cbeta'%20x_t%20+%20%5Cepsilon_t,%5Cquad%0A%5Ctext%7Bstate:%20%7D%20%5Calpha_%7Bt+1%7D%20=%20T_t%20%5Calpha_t%20+%20R_t%20%5Ceta_t,%0A"></p>
+<p>with structural components for <strong>level</strong>, <strong>trend</strong> (optional), and <strong>seasonality</strong> (optional).</p>
+<p><strong>Selection.</strong> Spike-and-slab priors perform <strong>automatic variable selection</strong> over lagged regressors.</p>
+<p><strong>Validation.</strong> LFO with <strong>expanding</strong> window (init 80%, horizon 6, step 6). Victory if <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD &gt; 0 and <img src="https://latex.codecogs.com/png.latex?%5CDelta">RMSE &gt; 0 (note: defined as RMSE<img src="https://latex.codecogs.com/png.latex?_%5Ctext%7Bbase%7D">-RMSE<img src="https://latex.codecogs.com/png.latex?_%5Ctext%7Bfull%7D">). Support and thresholds as above.</p>
+<p><strong>Function.</strong> <code>bsts_model()</code> tunes <strong>LL vs LLT</strong>, runs MCMC (2000 iters, burn 500), computes ELPD/coverage/PIT, ranks pairs, and writes CSV outputs. Arguments include <code>max_lag</code>, <code>seasonality</code>, and LFO controls.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Example (disabled for speed)</span></span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ss &lt;- bsts_model(</span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "path/to/data.xlsx",</span></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",</span></span>
+<span id="cb2-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "IPC","TdI_LdelT","TasaDescuento"),</span></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("ValorExportaciones","Real_Net_Profit",</span></span>
+<span id="cb2-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",</span></span>
+<span id="cb2-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",</span></span>
+<span id="cb2-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "InvestmentPerWorker_PPP2017"),</span></span>
+<span id="cb2-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   lfo_h = 6, lfo_step = 6, seasonality = 12</span></span>
+<span id="cb2-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+<section id="error-correction-with-mars-ecm-mars" class="level3">
+<h3 class="anchored" data-anchor-id="error-correction-with-mars-ecm-mars">2.3. Error-Correction with MARS (ECM-MARS)</h3>
+<p><strong>Purpose.</strong> A robust frequentist benchmark for <strong>cointegrated</strong> pairs, augmenting linear ECM with <strong>MARS splines</strong> to capture <strong>nonlinear short-run adjustment</strong>. Rolling CV and nested tuning are included to guard against overfitting.</p>
+<p><strong>Function.</strong> <code>ecm_mars()</code> accepts production/circulation sets, cointegration rule (Engle-Granger or Johansen), and a MARS grid; it performs rolling validation, filters by minimum support, and returns a tidy results table.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Example (disabled for speed)</span></span>
+<span id="cb3-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ec &lt;- ecm_mars(</span></span>
+<span id="cb3-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "path/to/data.xlsx",</span></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("ER.SPOT.CAN.US","ER.SPOT.US.CAN","ER.SPOT.US.REMB",</span></span>
+<span id="cb3-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CPI","TreasuryBonds10y","FedDiscountRate"),</span></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("Exports","RealNetProfit","RealSocialConsumptionPerWorker2017",</span></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealWagePPP2017","CapitalStockPPP2017",</span></span>
+<span id="cb3-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "LaborProductivityPPP2017","InvestmentPerWorkerPPP2017"),</span></span>
+<span id="cb3-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   cointeg_rule = "either"</span></span>
+<span id="cb3-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+</section>
+<section id="validation-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="validation-metrics">3. Validation &amp; Metrics</h2>
+<p><strong>Principle.</strong> Models are compared <strong>out-of-sample</strong> with two orthogonal criteria:</p>
+<ul>
+<li><strong>ELPD</strong> for probabilistic fit (predictive density on future data).</li>
+<li><strong>RMSE</strong> (plus MAE, sMAPE, <img src="https://latex.codecogs.com/png.latex?R%5E2">) for point accuracy on the original scale.</li>
+</ul>
+<p>A fold <strong>wins</strong> only if it improves <strong>both</strong>. The <strong>support</strong> statistic (wins / folds) summarizes temporal stability; results are ranked by <strong>support</strong>, then <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD, then <img src="https://latex.codecogs.com/png.latex?%5CDelta">RMSE.</p>
+</section>
+<section id="quickstart-deferred-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="quickstart-deferred-evaluation">4. Quickstart (deferred evaluation)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#| eval: false</span></span>
+<span id="cb4-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># GLM-AR(1)</span></span>
+<span id="cb4-3">res_glm <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bglmar1</span>(</span>
+<span id="cb4-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"path/to/data.xlsx"</span>,</span>
+<span id="cb4-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">max_lag =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">test_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">step_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span></span>
+<span id="cb4-7">)</span>
+<span id="cb4-8"></span>
+<span id="cb4-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># BSTS</span></span>
+<span id="cb4-10">res_ss <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bsts_model</span>(</span>
+<span id="cb4-11">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"path/to/data.xlsx"</span>,</span>
+<span id="cb4-12">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-13">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lfo_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lfo_step =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">seasonality =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span></span>
+<span id="cb4-14">)</span>
+<span id="cb4-15"></span>
+<span id="cb4-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ECM-MARS</span></span>
+<span id="cb4-17">res_ecm <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ecm_mars</span>(</span>
+<span id="cb4-18">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"path/to/data.xlsx"</span>,</span>
+<span id="cb4-19">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-20">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cointeg_rule =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"either"</span></span>
+<span id="cb4-21">)</span></code></pre></div></div>
+</section>
+<section id="outputs-reading-the-results" class="level2">
+<h2 class="anchored" data-anchor-id="outputs-reading-the-results">5. Outputs &amp; Reading the Results</h2>
+<p>Each runner writes <strong>rankings</strong> and <strong>winner lists</strong> (support ≥ 0.70 / 0.60) and, for BSTS, <strong>coverage/PIT</strong> diagnostics. CSV exports are provided for quick inspection or downstream reporting.</p>
+</section>
+<section id="design-choices-trade-offs" class="level2">
+<h2 class="anchored" data-anchor-id="design-choices-trade-offs">6. Design Choices &amp; Trade-offs</h2>
+<ul>
+<li><strong>Per-fold scaling</strong> prevents data leakage and keeps HMC on <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(1)"> scales.</li>
+<li><strong>Dual criteria</strong> (ELPD + RMSE) filter single-metric mirages.</li>
+<li><strong>Engine diversity</strong> enables <strong>triangulation</strong> across assumptions (AR(1) vs structural components vs cointegration + nonlinearity).</li>
+</ul>
+</section>
+<section id="when-to-use-which" class="level2">
+<h2 class="anchored" data-anchor-id="when-to-use-which">7. When to Use Which</h2>
+<ul>
+<li>Prefer <strong>GLM-AR1</strong> for compact lag structures and clear serial dependence.</li>
+<li>Prefer <strong>BSTS</strong> for decomposition, calibrated intervals, and automatic selection.</li>
+<li>Prefer <strong>ECM-MARS</strong> when cointegration is theoretically warranted and nonlinearity in corrections is expected.</li>
+</ul>
+<hr>
+<section id="notes-method-sources" class="level3">
+<h3 class="anchored" data-anchor-id="notes-method-sources">Notes &amp; Method Sources</h3>
+<p>Concise method notes were adapted from the package’s methodological documents and function headers. See the detailed <strong>BGLM-AR1</strong> write-up (model, priors, LFO, diagnostics), the <strong>BSTS</strong> framework (state equations, selection, validation), and the <strong>ECM-MARS</strong> protocol (I(1), cointegration, MARS tuning).</p>
+<hr>
+<section id="reproducibility-switch" class="level4">
+<h4 class="anchored" data-anchor-id="reproducibility-switch">Reproducibility switch</h4>
+<p>Set chunk <code>eval: false</code> to <code>true</code> for live runs. Heavy models (BSTS and BGLM) use MCMC; disable evaluation for speed on blog render.</p>
+<hr>
+<p><em>Project page:</em> <a href="https://github.com/IsadoreNabi/EconCausal">https://github.com/IsadoreNabi/EconCausal</a></p>
+
+
+</section>
+</section>
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>packages</category>
+  <category>Bayesian</category>
+  <category>econometrics</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal/</guid>
+  <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva</title>
+  <dc:creator>José Mauricio Gómez Julián</dc:creator>
+  <link>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal-esp/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<blockquote class="blockquote">
+<p>Este artículo presenta la biblioteca <strong>EconCausal</strong>: un conjunto compacto de herramientas para la <strong>evaluación causal predictiva</strong> entre variables de producción y circulación con <strong>validación temporal</strong>. La biblioteca expone tres motores—(1) GLM Bayesiano con errores AR(1), (2) State-Space Bayesiano (BSTS) con selección spike-and-slab, y (3) un ECM mejorado con MARS—para que los profesionales puedan equilibrar transparencia estructural, precisión predictiva y costo computacional mientras mantienen la evaluación en terreno fuera de muestra.</p>
+</blockquote>
+<section id="visión-general" class="level2">
+<h2 class="anchored" data-anchor-id="visión-general">1. Visión General</h2>
+<p>EconCausal implementa un flujo de trabajo <strong>primero-los-diagnósticos</strong>. Cada motor está emparejado con evaluación rodante <strong>Leave-Future-Out (LFO)</strong>, reportando <strong>Densidad Predictiva Logarítmica Esperada (ELPD)</strong> junto con métricas de error clásicas. La estabilidad se resume como <strong>soporte</strong>, es decir, la fracción de pliegues rodantes donde el modelo completo <strong>gana</strong> contra una línea base estricta.</p>
+<section id="por-qué-tres-motores" class="level3">
+<h3 class="anchored" data-anchor-id="por-qué-tres-motores">¿Por qué tres motores?</h3>
+<ul>
+<li><strong>GLM-AR(1)</strong>: regresión Bayesiana rápida con errores AR(1); ideal cuando un pequeño conjunto de rezagos está motivado económicamente y la correlación serial debe manejarse explícitamente.</li>
+<li><strong>BSTS + spike-and-slab</strong>: tendencia/nivel estructural (y estacionalidad opcional) con selección automática de predictores; más fuerte cuando importan la <strong>descomposición</strong> y los <strong>intervalos calibrados</strong>.</li>
+<li><strong>ECM + MARS</strong>: punto de referencia frecuentista híbrido para pares <strong>cointegrados</strong> que pueden exhibir correcciones de corto plazo <strong>no lineales</strong>.</li>
+</ul>
+<p>Los tres son deliberadamente diferentes: <strong>Bayesiano paramétrico</strong>, <strong>Bayesiano estructural</strong>, y <strong>frecuentista híbrido</strong>—para que los resultados puedan triangularse entre supuestos.</p>
+</section>
+</section>
+<section id="motores" class="level2">
+<h2 class="anchored" data-anchor-id="motores">2. Motores</h2>
+<section id="glm-bayesiano-con-errores-ar1-bglm-ar1" class="level3">
+<h3 class="anchored" data-anchor-id="glm-bayesiano-con-errores-ar1-bglm-ar1">2.1. GLM Bayesiano con Errores AR(1) (BGLM-AR1)</h3>
+<p><strong>Modelo.</strong> El resultado estandarizado <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,s%7D"> se regresa sobre un índice temporal estandarizado <img src="https://latex.codecogs.com/png.latex?t_s"> y rezagos estandarizados de <img src="https://latex.codecogs.com/png.latex?X">, con residuales AR(1):</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AY_%7Bt,s%7D=%5Calpha+%5Cbeta_0%20t_s+%5Csum_%7Bi=1%7D%5EL%20%5Cbeta_i%20X_%7Bt-i,s%7D+%5Cepsilon_t,%5Cquad%20%5Cepsilon_t=%5Cphi%20%5Cepsilon_%7Bt-1%7D+%5Ceta_t.%0A"></p>
+<p>La estandarización es crítica para HMC/NUTS eficiente.</p>
+<p><strong>Línea base.</strong> <img src="https://latex.codecogs.com/png.latex?Y_%7Bt,s%7D%5Csim%201+t_s+%5Ctext%7BAR(1)%7D"> proporciona el <strong>nulo</strong> sin información de <img src="https://latex.codecogs.com/png.latex?X"> para comparaciones OOS estrictas.</p>
+<p><strong>Priors.</strong> Débilmente informativos: <img src="https://latex.codecogs.com/png.latex?%5Cbeta%5Csim%20N(0,1)">, <img src="https://latex.codecogs.com/png.latex?%5Calpha%5Csim%20t_3(0,2.5)">, <img src="https://latex.codecogs.com/png.latex?%5Csigma%5Csim%5Ctext%7BExp%7D(1)">; <img src="https://latex.codecogs.com/png.latex?%5Cphi%5Cin(-1,1)">.</p>
+<p><strong>Muestreo y diagnósticos.</strong> 4 cadenas, 1500 iters, calentamiento 750, <code>adapt_delta=0.95</code>, <code>max_treedepth=12</code>; R-hat &lt; 1.01, ESS &gt; 400, cero/pocas divergencias.</p>
+<p><strong>Validación temporal.</strong> LFO con ventana <strong>deslizante</strong>; un pliegue es una <strong>victoria</strong> si <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD &gt; 0 <strong>y</strong> RMSE disminuye. Soporte = victorias / pliegues. Umbrales: <strong>0.70</strong> (estricto), <strong>0.60</strong> (moderado).</p>
+<p><strong>Función.</strong> <code>bglmar1()</code> orquesta todo el pipeline (E/S, escalado por pliegue, ajustes AR(1) vía <code>brms/cmdstanr</code>, métricas, ranking, y exportación CSV). Los argumentos clave incluyen <code>max_lag</code>, <code>initial_frac</code>, <code>initial_min</code>, <code>test_h</code>, <code>step_h</code>, y controles MCMC.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ejemplo (deshabilitado por velocidad)</span></span>
+<span id="cb1-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># resultado &lt;- bglmar1(</span></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "ruta/a/datos.xlsx",</span></span>
+<span id="cb1-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",</span></span>
+<span id="cb1-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "IPC","TdI_LdelT","TasaDescuento"),</span></span>
+<span id="cb1-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("ValorExportaciones","Real_Net_Profit",</span></span>
+<span id="cb1-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",</span></span>
+<span id="cb1-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",</span></span>
+<span id="cb1-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "InvestmentPerWorker_PPP2017"),</span></span>
+<span id="cb1-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   max_lag = 3, test_h = 12, step_h = 12</span></span>
+<span id="cb1-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+<section id="series-de-tiempo-estructurales-bayesianas-con-spike-and-slab-bsts" class="level3">
+<h3 class="anchored" data-anchor-id="series-de-tiempo-estructurales-bayesianas-con-spike-and-slab-bsts">2.2. Series de Tiempo Estructurales Bayesianas con Spike-and-Slab (BSTS)</h3>
+<p><strong>Marco de trabajo.</strong> State-space de dos ecuaciones:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7Bobs:%20%7D%20y_t%20=%20Z_t'%20%5Calpha_t%20+%20%5Cbeta'%20x_t%20+%20%5Cepsilon_t,%5Cquad%0A%5Ctext%7Bestado:%20%7D%20%5Calpha_%7Bt+1%7D%20=%20T_t%20%5Calpha_t%20+%20R_t%20%5Ceta_t,%0A"></p>
+<p>con componentes estructurales para <strong>nivel</strong>, <strong>tendencia</strong> (opcional), y <strong>estacionalidad</strong> (opcional).</p>
+<p><strong>Selección.</strong> Los priors spike-and-slab realizan <strong>selección automática de variables</strong> sobre regresores rezagados.</p>
+<p><strong>Validación.</strong> LFO con ventana <strong>expansiva</strong> (init 80%, horizonte 6, paso 6). Victoria si <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD &gt; 0 y <img src="https://latex.codecogs.com/png.latex?%5CDelta">RMSE &gt; 0 (nota: definido como RMSE<img src="https://latex.codecogs.com/png.latex?_%5Ctext%7Bbase%7D">-RMSE<img src="https://latex.codecogs.com/png.latex?_%5Ctext%7Bcompleto%7D">). Soporte y umbrales como arriba.</p>
+<p><strong>Función.</strong> <code>bsts_model()</code> afina <strong>LL vs LLT</strong>, ejecuta MCMC (2000 iters, quemado 500), calcula ELPD/cobertura/PIT, clasifica pares, y escribe salidas CSV. Los argumentos incluyen <code>max_lag</code>, <code>seasonality</code>, y controles LFO.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ejemplo (deshabilitado por velocidad)</span></span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ss &lt;- bsts_model(</span></span>
+<span id="cb2-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "ruta/a/datos.xlsx",</span></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("TC_SPOT_CAN_US","TC_SPOT_US_CAN","TC_SPOT_US_REMB",</span></span>
+<span id="cb2-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "IPC","TdI_LdelT","TasaDescuento"),</span></span>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("ValorExportaciones","Real_Net_Profit",</span></span>
+<span id="cb2-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealSocialConsumptionPerWorker2017","RealWage_PPP2017",</span></span>
+<span id="cb2-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CapitalStock_PPP2017","LaborProductivity_PPP2017",</span></span>
+<span id="cb2-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "InvestmentPerWorker_PPP2017"),</span></span>
+<span id="cb2-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   lfo_h = 6, lfo_step = 6, seasonality = 12</span></span>
+<span id="cb2-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+<section id="corrección-de-error-con-mars-ecm-mars" class="level3">
+<h3 class="anchored" data-anchor-id="corrección-de-error-con-mars-ecm-mars">2.3. Corrección de Error con MARS (ECM-MARS)</h3>
+<p><strong>Propósito.</strong> Un punto de referencia frecuentista robusto para pares <strong>cointegrados</strong>, aumentando ECM lineal con <strong>splines MARS</strong> para capturar <strong>ajuste no lineal de corto plazo</strong>. Se incluyen CV rodante y ajuste anidado para proteger contra sobreajuste.</p>
+<p><strong>Función.</strong> <code>ecm_mars()</code> acepta conjuntos de producción/circulación, regla de cointegración (Engle-Granger o Johansen), y una cuadrícula MARS; realiza validación rodante, filtra por soporte mínimo, y devuelve una tabla de resultados ordenada.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ejemplo (deshabilitado por velocidad)</span></span>
+<span id="cb3-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ec &lt;- ecm_mars(</span></span>
+<span id="cb3-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   data_path = "ruta/a/datos.xlsx",</span></span>
+<span id="cb3-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   circ_vars = c("ER.SPOT.CAN.US","ER.SPOT.US.CAN","ER.SPOT.US.REMB",</span></span>
+<span id="cb3-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "CPI","TreasuryBonds10y","FedDiscountRate"),</span></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   prod_vars = c("Exports","RealNetProfit","RealSocialConsumptionPerWorker2017",</span></span>
+<span id="cb3-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "RealWagePPP2017","CapitalStockPPP2017",</span></span>
+<span id="cb3-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#                 "LaborProductivityPPP2017","InvestmentPerWorkerPPP2017"),</span></span>
+<span id="cb3-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#   cointeg_rule = "either"</span></span>
+<span id="cb3-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># )</span></span></code></pre></div></div>
+</section>
+</section>
+<section id="validación-y-métricas" class="level2">
+<h2 class="anchored" data-anchor-id="validación-y-métricas">3. Validación y Métricas</h2>
+<p><strong>Principio.</strong> Los modelos se comparan <strong>fuera de muestra</strong> con dos criterios ortogonales:</p>
+<ul>
+<li><strong>ELPD</strong> para ajuste probabilístico (densidad predictiva en datos futuros).</li>
+<li><strong>RMSE</strong> (más MAE, sMAPE, <img src="https://latex.codecogs.com/png.latex?R%5E2">) para precisión puntual en la escala original.</li>
+</ul>
+<p>Un pliegue <strong>gana</strong> solo si mejora <strong>ambos</strong>. El estadístico de <strong>soporte</strong> (victorias / pliegues) resume la estabilidad temporal; los resultados se clasifican por <strong>soporte</strong>, luego <img src="https://latex.codecogs.com/png.latex?%5CDelta">ELPD, luego <img src="https://latex.codecogs.com/png.latex?%5CDelta">RMSE.</p>
+</section>
+<section id="inicio-rápido-evaluación-diferida" class="level2">
+<h2 class="anchored" data-anchor-id="inicio-rápido-evaluación-diferida">4. Inicio Rápido (evaluación diferida)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#| eval: false</span></span>
+<span id="cb4-2"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># GLM-AR(1)</span></span>
+<span id="cb4-3">res_glm <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bglmar1</span>(</span>
+<span id="cb4-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ruta/a/datos.xlsx"</span>,</span>
+<span id="cb4-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">max_lag =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">test_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">step_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span></span>
+<span id="cb4-7">)</span>
+<span id="cb4-8"></span>
+<span id="cb4-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># BSTS</span></span>
+<span id="cb4-10">res_ss <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">bsts_model</span>(</span>
+<span id="cb4-11">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ruta/a/datos.xlsx"</span>,</span>
+<span id="cb4-12">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-13">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lfo_h =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">lfo_step =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">seasonality =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span></span>
+<span id="cb4-14">)</span>
+<span id="cb4-15"></span>
+<span id="cb4-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># ECM-MARS</span></span>
+<span id="cb4-17">res_ecm <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ecm_mars</span>(</span>
+<span id="cb4-18">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">data_path =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ruta/a/datos.xlsx"</span>,</span>
+<span id="cb4-19">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">circ_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">prod_vars =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"..."</span>),</span>
+<span id="cb4-20">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">cointeg_rule =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"either"</span></span>
+<span id="cb4-21">)</span></code></pre></div></div>
+</section>
+<section id="salidas-y-lectura-de-resultados" class="level2">
+<h2 class="anchored" data-anchor-id="salidas-y-lectura-de-resultados">5. Salidas y Lectura de Resultados</h2>
+<p>Cada ejecutor escribe <strong>clasificaciones</strong> y <strong>listas de ganadores</strong> (soporte ≥ 0.70 / 0.60) y, para BSTS, diagnósticos de <strong>cobertura/PIT</strong>. Se proporcionan exportaciones CSV para inspección rápida o informes posteriores.</p>
+</section>
+<section id="decisiones-de-diseño-y-compensaciones" class="level2">
+<h2 class="anchored" data-anchor-id="decisiones-de-diseño-y-compensaciones">6. Decisiones de Diseño y Compensaciones</h2>
+<ul>
+<li><strong>Escalado por pliegue</strong> previene fuga de datos y mantiene HMC en escalas <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BO%7D(1)">.</li>
+<li><strong>Criterios duales</strong> (ELPD + RMSE) filtran espejismos de métrica única.</li>
+<li><strong>Diversidad de motores</strong> permite <strong>triangulación</strong> entre supuestos (AR(1) vs componentes estructurales vs cointegración + no linealidad).</li>
+</ul>
+</section>
+<section id="cuándo-usar-cuál" class="level2">
+<h2 class="anchored" data-anchor-id="cuándo-usar-cuál">7. Cuándo Usar Cuál</h2>
+<ul>
+<li>Prefiere <strong>GLM-AR1</strong> para estructuras de rezago compactas y dependencia serial clara.</li>
+<li>Prefiere <strong>BSTS</strong> para descomposición, intervalos calibrados y selección automática.</li>
+<li>Prefiere <strong>ECM-MARS</strong> cuando la cointegración está teóricamente justificada y se espera no linealidad en las correcciones.</li>
+</ul>
+<hr>
+<section id="notas-y-fuentes-de-métodos" class="level3">
+<h3 class="anchored" data-anchor-id="notas-y-fuentes-de-métodos">Notas y Fuentes de Métodos</h3>
+<p>Las notas concisas de métodos fueron adaptadas de los documentos metodológicos del paquete y encabezados de funciones. Ver el documento detallado de <strong>BGLM-AR1</strong> (modelo, priors, LFO, diagnósticos), el marco de <strong>BSTS</strong> (ecuaciones de estado, selección, validación), y el protocolo <strong>ECM-MARS</strong> (I(1), cointegración, ajuste MARS).</p>
+<hr>
+<section id="interruptor-de-reproducibilidad" class="level4">
+<h4 class="anchored" data-anchor-id="interruptor-de-reproducibilidad">Interruptor de Reproducibilidad</h4>
+<p>Cambia <code>eval: false</code> a <code>true</code> en los chunks para ejecuciones en vivo. Los modelos pesados (BSTS y BGLM) usan MCMC; deshabilita la evaluación por velocidad en el renderizado del blog.</p>
+<hr>
+<p><em>Página del proyecto:</em> <a href="https://github.com/IsadoreNabi/EconCausal">https://github.com/IsadoreNabi/EconCausal</a></p>
+
+
+</section>
+</section>
+</section>
+
+ ]]></description>
+  <category>R</category>
+  <category>paquetes</category>
+  <category>Bayesiano</category>
+  <category>econometría</category>
+  <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal-esp/</guid>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>
 <item>

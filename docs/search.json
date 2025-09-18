@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "PHILOSOPHY OF STATISTICS — Lab Notes",
     "section": "",
-    "text": "BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW\n\n\n\nR\n\npackages\n\nBayesian\n\n\n\nFrom Prior Weights to Posterior Sectoral Shares With Coherence, Stability, and Interpretability Metrics—Plus a Synthetic Demo.\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nDESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS\n\n\n\nR\n\npackages\n\nBayesian\n\n\n\nDe pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética.\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nSep 14, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\nNo matching items"
+    "text": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling\n\n\n\nR\n\ntopology\n\ntime-series\n\n\n\nFrom neighborhoods → base → full topology, to a clear decision rule: when global continuity is valid — and when segmentation is mandatory.\n\n\n\n\n\nSep 18, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\ntopologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales\n\n\n\nR\n\ntopología\n\nseries-temporales\n\n\n\nDe vecindarios → base → topología completa, hacia una regla de decisión clara: cuándo la continuidad global es válida — y cuándo la segmentación es obligatoria.\n\n\n\n\n\nSep 18, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nBAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WORKFLOW\n\n\n\nR\n\npackages\n\nBayesian\n\n\n\nFrom Prior Weights to Posterior Sectoral Shares With Coherence, Stability, and Interpretability Metrics—Plus a Synthetic Demo.\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nDESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS\n\n\n\nR\n\npackages\n\nBayesian\n\n\n\nDe pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética.\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nEconCausal: Bayesian & Econometric Tools for Predictive Causality\n\n\n\nR\n\npackages\n\nBayesian\n\neconometrics\n\n\n\nThree Complementary Engines: Bayesian GLM with AR(1), Bayesian Structural Time Series With Spike-And-Slab, and ECM with MARS\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nEconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva\n\n\n\nR\n\npaquetes\n\nBayesiano\n\neconometría\n\n\n\nTres Motores Complementarios: GLM Bayesiano con AR(1), Series de Tiempo Estructurales Bayesianas con Spike-and-Slab, y ECM con MARS\n\n\n\n\n\nSep 17, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nSep 14, 2025\n\n\nJosé Mauricio Gómez Julián\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/2025-09-17-bayesian-disaggregation/index.html",
@@ -236,5 +236,551 @@
     "title": "DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A DIAGNÓSTICOS",
     "section": "9.5. Impacto práctico",
     "text": "9.5. Impacto práctico\nPosibilita que bancos centrales, investigadores y analistas descompongan choques agregados en componentes sectoriales y diseñen intervenciones basadas en dinámica granular de precios."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html",
+    "href": "posts/2025-09-18-econcausal/index.html",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "",
+    "text": "This article presents the EconCausal library: a compact toolkit for predictive causal assessment between production and circulation variables with time-aware validation. The library exposes three engines—(1) Bayesian GLM with AR(1) errors, (2) Bayesian State-Space (BSTS) with spike-and-slab selection, and (3) an ECM enhanced with MARS—so practitioners can trade off structural transparency, predictive sharpness, and computational cost while keeping evaluation on out-of-sample grounds."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#overview",
+    "href": "posts/2025-09-18-econcausal/index.html#overview",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "1. Overview",
+    "text": "1. Overview\nEconCausal implements a diagnostics-first workflow. Each engine is paired with Leave-Future-Out (LFO) rolling evaluation, reporting Expected Log Predictive Density (ELPD) alongside classical error metrics. Stability is summarized as support, i.e., the fraction of rolling folds where the full model wins against a strict baseline.\n\nWhy three engines?\n\nGLM-AR(1): fast Bayesian regression with AR(1) errors; ideal when a small set of lags is economically motivated and serial correlation must be handled explicitly.\nBSTS + spike-and-slab: structural trend/level (and optional seasonality) with automatic predictor selection; strongest when decomposition and calibrated intervals matter.\nECM + MARS: hybrid frequentist benchmark for cointegrated pairs that may exhibit nonlinear short-run corrections.\n\nThe three are deliberately different: parametric Bayesian, structural Bayesian, and hybrid frequentist—so results can be triangulated across assumptions."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#methods-concise",
+    "href": "posts/2025-09-18-econcausal/index.html#methods-concise",
+    "title": "ECONCAUSAL: Bayesian & Econometric Causality at Scale",
+    "section": "2. Methods (Concise)",
+    "text": "2. Methods (Concise)\n\n2.1 ECM-MARS (cointegration + adaptive splines)\nA robust ECM benchmark is combined with Multivariate Adaptive Regression Splines to capture nonlinear adjustments around the long-run equilibrium. The pipeline verifies \\(I(1)\\), tests cointegration (Engle–Granger / Johansen), and fits a nonlinear ECM with MARS under rolling-origin temporal CV (12-month horizon; sliding window; nested tuning to avoid leakage). \nIntent: reconcile long-run relationships while allowing nonlinear short-run dynamics; select winners by out-of-sample criteria under causality-respecting splits. \n\n\n2.2 Bayesian GLM with AR(1) (BGLM-AR1)\nA standardized regression with AR(1) errors is estimated in a fully Bayesian way (NUTS via cmdstanr). Priors are weakly informative; the baseline excludes predictors (trend + AR(1)) and the full model adds standardized lags of \\(X\\). Evaluation uses ELPD (predictive density) and point-error metrics; a fold is a “win” if ΔELPD &gt; 0 and RMSE decreases. \nIntent: quantify uncertainty and predictive advantage relative to a trend-AR baseline; emphasize stable gains across time via LFO with sliding window. \n\n\n2.3 Bayesian Structural Time Series (BSTS) with Variable Selection\nA state-space decomposition (level / trend / optional seasonality) is combined with spike-and-slab inclusion for lagged regressors; inference uses FFBS + SSVS. Validation adopts h = 6 months and step 6 to increase temporal resolution. Victory requires ΔELPD &gt; 0 and ΔRMSE &gt; 0 (base RMSE minus full RMSE). \nIntent: obtain interpretable structural components with calibrated uncertainty and automatic variable selection."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#validation-metrics-and-stability",
+    "href": "posts/2025-09-18-econcausal/index.html#validation-metrics-and-stability",
+    "title": "ECONCAUSAL: Bayesian & Econometric Causality at Scale",
+    "section": "3. Validation, Metrics, and Stability",
+    "text": "3. Validation, Metrics, and Stability\nAll pipelines use Leave-Future-Out with rolling origin and fixed horizons. Metrics include ELPD, RMSE/MAE/sMAPE/R², and a support ratio (wins / folds). Recommended thresholds: strict support ≥ 0.70; moderate ≥ 0.60; minimum 5 valid folds. \n\nWin rules: • BGLM-AR1: ΔELPD &gt; 0 and RMSE_full &lt; RMSE_base. • BSTS: ΔELPD &gt; 0 and (RMSE_base − RMSE_full) &gt; 0."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#end-to-end-api-quick-start",
+    "href": "posts/2025-09-18-econcausal/index.html#end-to-end-api-quick-start",
+    "title": "ECONCAUSAL: Bayesian & Econometric Causality at Scale",
+    "section": "4. End-to-End API (Quick Start)",
+    "text": "4. End-to-End API (Quick Start)\nThree high-level functions orchestrate I/O, lag construction, LFO, fitting, metrics, ranking, and CSV exports:\n\necm_mars() — cointegration checks + MARS with nested CV. \nbglmar1() — Bayesian GLM with AR(1) errors and sliding-window LFO. \nbsts_model() — BSTS with spike-and-slab and h = 6 LFO. \n\nEach runner writes rankings (all, ≥0.70, ≥0.60) to CSV and returns tidy summaries. \n# Example (disabled unless the package is available)\n# Adjust paths/variable names to the local Excel schema.\n\n#| label: demo-api\n#| eval: have_pkg\n# pseudo-example:\n# res_ecm  &lt;- EconCausal::ecm_mars( data_path = \"data.xlsx\",\n#                                   circ_vars = c(\"TC_SPOT_CAN_US\",\"TC_SPOT_US_CAN\",\"TC_SPOT_US_REMB\",\n#                                                 \"IPC\",\"TdI_LdelT\",\"TasaDescuento\"),\n#                                   prod_vars = c(\"ValorExportaciones\",\"Real_Net_Profit\",\n#                                                 \"RealSocialConsumptionPerWorker2017\",\"RealWage_PPP2017\",\n#                                                 \"CapitalStock_PPP2017\",\"LaborProductivity_PPP2017\",\n#                                                 \"InvestmentPerWorker_PPP2017\") )\n# res_glm  &lt;- EconCausal::bglmar1(  data_path = \"data.xlsx\", circ_vars = ..., prod_vars = ... )\n# res_bsts &lt;- EconCausal::bsts_model(data_path = \"data.xlsx\", circ_vars = ..., prod_vars = ... )\n\n# Inspect top winners (support ≥ 0.70) from one pipeline:\n# res_glm$winners_070"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#practical-defaults",
+    "href": "posts/2025-09-18-econcausal/index.html#practical-defaults",
+    "title": "ECONCAUSAL: Bayesian & Econometric Causality at Scale",
+    "section": "5. Practical Defaults",
+    "text": "5. Practical Defaults\n\nHorizons & steps: ECM-MARS and BGLM-AR1 use 12/12; BSTS uses 6/6 to reveal finer instabilities. \nStandardization: per-fold scaling (never global) prevents leakage and stabilizes NUTS. \nSupport cutoffs: 0.70 (strict) and 0.60 (moderate) with at least 5 folds. \nOutputs: CSV leaderboards and per-fold summaries for auditability."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#interpreting-results",
+    "href": "posts/2025-09-18-econcausal/index.html#interpreting-results",
+    "title": "ECONCAUSAL: Bayesian & Econometric Causality at Scale",
+    "section": "6. Interpreting Results",
+    "text": "6. Interpreting Results\nHigh support indicates relationships that persist under changing regimes; moderate support may reflect regime-dependent or indirect channels. Requiring wins in both probabilistic (ELPD) and deterministic (RMSE) criteria filters out fragile effects. Structural components from BSTS provide economic interpretability alongside calibrated predictive intervals. \n\nProject page: https://github.com/IsadoreNabi/EconCausal"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#engines",
+    "href": "posts/2025-09-18-econcausal/index.html#engines",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "2. Engines",
+    "text": "2. Engines\n\n2.1. Bayesian GLM with AR(1) Errors (BGLM-AR1)\nModel. The standardized outcome \\(Y_{t,s}\\) is regressed on a standardized time index \\(t_s\\) and standardized lags of \\(X\\), with AR(1) residuals:\n\\[\nY_{t,s}=\\alpha+\\beta_0 t_s+\\sum_{i=1}^L \\beta_i X_{t-i,s}+\\epsilon_t,\\quad \\epsilon_t=\\phi \\epsilon_{t-1}+\\eta_t.\n\\]\nStandardization is critical for efficient HMC/NUTS.\nBaseline. \\(Y_{t,s}\\sim 1+t_s+\\text{AR(1)}\\) provides the null without \\(X\\)-information for strict OOS comparisons.\nPriors. Weakly informative: \\(\\beta\\sim N(0,1)\\), \\(\\alpha\\sim t_3(0,2.5)\\), \\(\\sigma\\sim\\text{Exp}(1)\\); \\(\\phi\\in(-1,1)\\).\nSampling & diagnostics. 4 chains, 1500 iters, warmup 750, adapt_delta=0.95, max_treedepth=12; R-hat &lt; 1.01, ESS &gt; 400, zero/few divergences.\nTemporal validation. LFO with sliding window; a fold is a victory if \\(\\Delta\\)ELPD &gt; 0 and RMSE decreases. Support = wins / folds. Thresholds: 0.70 (strict), 0.60 (moderate).\nFunction. bglmar1() orchestrates the entire pipeline (I/O, scaling per-fold, AR(1) fits via brms/cmdstanr, metrics, ranking, and CSV export). Key arguments include max_lag, initial_frac, initial_min, test_h, step_h, and MCMC controls.\n# Example (disabled for speed)\n# result &lt;- bglmar1(\n#   data_path = \"path/to/data.xlsx\",\n#   circ_vars = c(\"TC_SPOT_CAN_US\",\"TC_SPOT_US_CAN\",\"TC_SPOT_US_REMB\",\n#                 \"IPC\",\"TdI_LdelT\",\"TasaDescuento\"),\n#   prod_vars = c(\"ValorExportaciones\",\"Real_Net_Profit\",\n#                 \"RealSocialConsumptionPerWorker2017\",\"RealWage_PPP2017\",\n#                 \"CapitalStock_PPP2017\",\"LaborProductivity_PPP2017\",\n#                 \"InvestmentPerWorker_PPP2017\"),\n#   max_lag = 3, test_h = 12, step_h = 12\n# )\n\n\n2.2. Bayesian Structural Time Series with Spike-and-Slab (BSTS)\nFramework. Two-equation state-space:\n\\[\n\\text{obs: } y_t = Z_t' \\alpha_t + \\beta' x_t + \\epsilon_t,\\quad\n\\text{state: } \\alpha_{t+1} = T_t \\alpha_t + R_t \\eta_t,\n\\]\nwith structural components for level, trend (optional), and seasonality (optional).\nSelection. Spike-and-slab priors perform automatic variable selection over lagged regressors.\nValidation. LFO with expanding window (init 80%, horizon 6, step 6). Victory if \\(\\Delta\\)ELPD &gt; 0 and \\(\\Delta\\)RMSE &gt; 0 (note: defined as RMSE\\(_\\text{base}\\)-RMSE\\(_\\text{full}\\)). Support and thresholds as above.\nFunction. bsts_model() tunes LL vs LLT, runs MCMC (2000 iters, burn 500), computes ELPD/coverage/PIT, ranks pairs, and writes CSV outputs. Arguments include max_lag, seasonality, and LFO controls.\n# Example (disabled for speed)\n# ss &lt;- bsts_model(\n#   data_path = \"path/to/data.xlsx\",\n#   circ_vars = c(\"TC_SPOT_CAN_US\",\"TC_SPOT_US_CAN\",\"TC_SPOT_US_REMB\",\n#                 \"IPC\",\"TdI_LdelT\",\"TasaDescuento\"),\n#   prod_vars = c(\"ValorExportaciones\",\"Real_Net_Profit\",\n#                 \"RealSocialConsumptionPerWorker2017\",\"RealWage_PPP2017\",\n#                 \"CapitalStock_PPP2017\",\"LaborProductivity_PPP2017\",\n#                 \"InvestmentPerWorker_PPP2017\"),\n#   lfo_h = 6, lfo_step = 6, seasonality = 12\n# )\n\n\n2.3. Error-Correction with MARS (ECM-MARS)\nPurpose. A robust frequentist benchmark for cointegrated pairs, augmenting linear ECM with MARS splines to capture nonlinear short-run adjustment. Rolling CV and nested tuning are included to guard against overfitting.\nFunction. ecm_mars() accepts production/circulation sets, cointegration rule (Engle-Granger or Johansen), and a MARS grid; it performs rolling validation, filters by minimum support, and returns a tidy results table.\n# Example (disabled for speed)\n# ec &lt;- ecm_mars(\n#   data_path = \"path/to/data.xlsx\",\n#   circ_vars = c(\"ER.SPOT.CAN.US\",\"ER.SPOT.US.CAN\",\"ER.SPOT.US.REMB\",\n#                 \"CPI\",\"TreasuryBonds10y\",\"FedDiscountRate\"),\n#   prod_vars = c(\"Exports\",\"RealNetProfit\",\"RealSocialConsumptionPerWorker2017\",\n#                 \"RealWagePPP2017\",\"CapitalStockPPP2017\",\n#                 \"LaborProductivityPPP2017\",\"InvestmentPerWorkerPPP2017\"),\n#   cointeg_rule = \"either\"\n# )"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#validation-metrics",
+    "href": "posts/2025-09-18-econcausal/index.html#validation-metrics",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "3. Validation & Metrics",
+    "text": "3. Validation & Metrics\nPrinciple. Models are compared out-of-sample with two orthogonal criteria:\n\nELPD for probabilistic fit (predictive density on future data).\nRMSE (plus MAE, sMAPE, \\(R^2\\)) for point accuracy on the original scale.\n\nA fold wins only if it improves both. The support statistic (wins / folds) summarizes temporal stability; results are ranked by support, then \\(\\Delta\\)ELPD, then \\(\\Delta\\)RMSE."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#quickstart-deferred-evaluation",
+    "href": "posts/2025-09-18-econcausal/index.html#quickstart-deferred-evaluation",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "4. Quickstart (deferred evaluation)",
+    "text": "4. Quickstart (deferred evaluation)\n#| eval: false\n# GLM-AR(1)\nres_glm &lt;- bglmar1(\n  data_path = \"path/to/data.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  max_lag = 3, test_h = 12, step_h = 12\n)\n\n# BSTS\nres_ss &lt;- bsts_model(\n  data_path = \"path/to/data.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  lfo_h = 6, lfo_step = 6, seasonality = 12\n)\n\n# ECM-MARS\nres_ecm &lt;- ecm_mars(\n  data_path = \"path/to/data.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  cointeg_rule = \"either\"\n)"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#outputs-reading-the-results",
+    "href": "posts/2025-09-18-econcausal/index.html#outputs-reading-the-results",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "5. Outputs & Reading the Results",
+    "text": "5. Outputs & Reading the Results\nEach runner writes rankings and winner lists (support ≥ 0.70 / 0.60) and, for BSTS, coverage/PIT diagnostics. CSV exports are provided for quick inspection or downstream reporting."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#design-choices-trade-offs",
+    "href": "posts/2025-09-18-econcausal/index.html#design-choices-trade-offs",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "6. Design Choices & Trade-offs",
+    "text": "6. Design Choices & Trade-offs\n\nPer-fold scaling prevents data leakage and keeps HMC on \\(\\mathcal{O}(1)\\) scales.\nDual criteria (ELPD + RMSE) filter single-metric mirages.\nEngine diversity enables triangulation across assumptions (AR(1) vs structural components vs cointegration + nonlinearity)."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal/index.html#when-to-use-which",
+    "href": "posts/2025-09-18-econcausal/index.html#when-to-use-which",
+    "title": "EconCausal: Bayesian & Econometric Tools for Predictive Causality",
+    "section": "7. When to Use Which",
+    "text": "7. When to Use Which\n\nPrefer GLM-AR1 for compact lag structures and clear serial dependence.\nPrefer BSTS for decomposition, calibrated intervals, and automatic selection.\nPrefer ECM-MARS when cointegration is theoretically warranted and nonlinearity in corrections is expected.\n\n\n\nNotes & Method Sources\nConcise method notes were adapted from the package’s methodological documents and function headers. See the detailed BGLM-AR1 write-up (model, priors, LFO, diagnostics), the BSTS framework (state equations, selection, validation), and the ECM-MARS protocol (I(1), cointegration, MARS tuning).\n\n\nReproducibility switch\nSet chunk eval: false to true for live runs. Heavy models (BSTS and BGLM) use MCMC; disable evaluation for speed on blog render.\n\nProject page: https://github.com/IsadoreNabi/EconCausal"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html",
+    "href": "posts/2025-09-18-econcausal-esp/index.html",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "",
+    "text": "Este artículo presenta la biblioteca EconCausal: un conjunto compacto de herramientas para la evaluación causal predictiva entre variables de producción y circulación con validación temporal. La biblioteca expone tres motores—(1) GLM Bayesiano con errores AR(1), (2) State-Space Bayesiano (BSTS) con selección spike-and-slab, y (3) un ECM mejorado con MARS—para que los profesionales puedan equilibrar transparencia estructural, precisión predictiva y costo computacional mientras mantienen la evaluación en terreno fuera de muestra."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#visión-general",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#visión-general",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "1. Visión General",
+    "text": "1. Visión General\nEconCausal implementa un flujo de trabajo primero-los-diagnósticos. Cada motor está emparejado con evaluación rodante Leave-Future-Out (LFO), reportando Densidad Predictiva Logarítmica Esperada (ELPD) junto con métricas de error clásicas. La estabilidad se resume como soporte, es decir, la fracción de pliegues rodantes donde el modelo completo gana contra una línea base estricta.\n\n¿Por qué tres motores?\n\nGLM-AR(1): regresión Bayesiana rápida con errores AR(1); ideal cuando un pequeño conjunto de rezagos está motivado económicamente y la correlación serial debe manejarse explícitamente.\nBSTS + spike-and-slab: tendencia/nivel estructural (y estacionalidad opcional) con selección automática de predictores; más fuerte cuando importan la descomposición y los intervalos calibrados.\nECM + MARS: punto de referencia frecuentista híbrido para pares cointegrados que pueden exhibir correcciones de corto plazo no lineales.\n\nLos tres son deliberadamente diferentes: Bayesiano paramétrico, Bayesiano estructural, y frecuentista híbrido—para que los resultados puedan triangularse entre supuestos."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#motores",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#motores",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "2. Motores",
+    "text": "2. Motores\n\n2.1. GLM Bayesiano con Errores AR(1) (BGLM-AR1)\nModelo. El resultado estandarizado \\(Y_{t,s}\\) se regresa sobre un índice temporal estandarizado \\(t_s\\) y rezagos estandarizados de \\(X\\), con residuales AR(1):\n\\[\nY_{t,s}=\\alpha+\\beta_0 t_s+\\sum_{i=1}^L \\beta_i X_{t-i,s}+\\epsilon_t,\\quad \\epsilon_t=\\phi \\epsilon_{t-1}+\\eta_t.\n\\]\nLa estandarización es crítica para HMC/NUTS eficiente.\nLínea base. \\(Y_{t,s}\\sim 1+t_s+\\text{AR(1)}\\) proporciona el nulo sin información de \\(X\\) para comparaciones OOS estrictas.\nPriors. Débilmente informativos: \\(\\beta\\sim N(0,1)\\), \\(\\alpha\\sim t_3(0,2.5)\\), \\(\\sigma\\sim\\text{Exp}(1)\\); \\(\\phi\\in(-1,1)\\).\nMuestreo y diagnósticos. 4 cadenas, 1500 iters, calentamiento 750, adapt_delta=0.95, max_treedepth=12; R-hat &lt; 1.01, ESS &gt; 400, cero/pocas divergencias.\nValidación temporal. LFO con ventana deslizante; un pliegue es una victoria si \\(\\Delta\\)ELPD &gt; 0 y RMSE disminuye. Soporte = victorias / pliegues. Umbrales: 0.70 (estricto), 0.60 (moderado).\nFunción. bglmar1() orquesta todo el pipeline (E/S, escalado por pliegue, ajustes AR(1) vía brms/cmdstanr, métricas, ranking, y exportación CSV). Los argumentos clave incluyen max_lag, initial_frac, initial_min, test_h, step_h, y controles MCMC.\n# Ejemplo (deshabilitado por velocidad)\n# resultado &lt;- bglmar1(\n#   data_path = \"ruta/a/datos.xlsx\",\n#   circ_vars = c(\"TC_SPOT_CAN_US\",\"TC_SPOT_US_CAN\",\"TC_SPOT_US_REMB\",\n#                 \"IPC\",\"TdI_LdelT\",\"TasaDescuento\"),\n#   prod_vars = c(\"ValorExportaciones\",\"Real_Net_Profit\",\n#                 \"RealSocialConsumptionPerWorker2017\",\"RealWage_PPP2017\",\n#                 \"CapitalStock_PPP2017\",\"LaborProductivity_PPP2017\",\n#                 \"InvestmentPerWorker_PPP2017\"),\n#   max_lag = 3, test_h = 12, step_h = 12\n# )\n\n\n2.2. Series de Tiempo Estructurales Bayesianas con Spike-and-Slab (BSTS)\nMarco de trabajo. State-space de dos ecuaciones:\n\\[\n\\text{obs: } y_t = Z_t' \\alpha_t + \\beta' x_t + \\epsilon_t,\\quad\n\\text{estado: } \\alpha_{t+1} = T_t \\alpha_t + R_t \\eta_t,\n\\]\ncon componentes estructurales para nivel, tendencia (opcional), y estacionalidad (opcional).\nSelección. Los priors spike-and-slab realizan selección automática de variables sobre regresores rezagados.\nValidación. LFO con ventana expansiva (init 80%, horizonte 6, paso 6). Victoria si \\(\\Delta\\)ELPD &gt; 0 y \\(\\Delta\\)RMSE &gt; 0 (nota: definido como RMSE\\(_\\text{base}\\)-RMSE\\(_\\text{completo}\\)). Soporte y umbrales como arriba.\nFunción. bsts_model() afina LL vs LLT, ejecuta MCMC (2000 iters, quemado 500), calcula ELPD/cobertura/PIT, clasifica pares, y escribe salidas CSV. Los argumentos incluyen max_lag, seasonality, y controles LFO.\n# Ejemplo (deshabilitado por velocidad)\n# ss &lt;- bsts_model(\n#   data_path = \"ruta/a/datos.xlsx\",\n#   circ_vars = c(\"TC_SPOT_CAN_US\",\"TC_SPOT_US_CAN\",\"TC_SPOT_US_REMB\",\n#                 \"IPC\",\"TdI_LdelT\",\"TasaDescuento\"),\n#   prod_vars = c(\"ValorExportaciones\",\"Real_Net_Profit\",\n#                 \"RealSocialConsumptionPerWorker2017\",\"RealWage_PPP2017\",\n#                 \"CapitalStock_PPP2017\",\"LaborProductivity_PPP2017\",\n#                 \"InvestmentPerWorker_PPP2017\"),\n#   lfo_h = 6, lfo_step = 6, seasonality = 12\n# )\n\n\n2.3. Corrección de Error con MARS (ECM-MARS)\nPropósito. Un punto de referencia frecuentista robusto para pares cointegrados, aumentando ECM lineal con splines MARS para capturar ajuste no lineal de corto plazo. Se incluyen CV rodante y ajuste anidado para proteger contra sobreajuste.\nFunción. ecm_mars() acepta conjuntos de producción/circulación, regla de cointegración (Engle-Granger o Johansen), y una cuadrícula MARS; realiza validación rodante, filtra por soporte mínimo, y devuelve una tabla de resultados ordenada.\n# Ejemplo (deshabilitado por velocidad)\n# ec &lt;- ecm_mars(\n#   data_path = \"ruta/a/datos.xlsx\",\n#   circ_vars = c(\"ER.SPOT.CAN.US\",\"ER.SPOT.US.CAN\",\"ER.SPOT.US.REMB\",\n#                 \"CPI\",\"TreasuryBonds10y\",\"FedDiscountRate\"),\n#   prod_vars = c(\"Exports\",\"RealNetProfit\",\"RealSocialConsumptionPerWorker2017\",\n#                 \"RealWagePPP2017\",\"CapitalStockPPP2017\",\n#                 \"LaborProductivityPPP2017\",\"InvestmentPerWorkerPPP2017\"),\n#   cointeg_rule = \"either\"\n# )"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#validación-y-métricas",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#validación-y-métricas",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "3. Validación y Métricas",
+    "text": "3. Validación y Métricas\nPrincipio. Los modelos se comparan fuera de muestra con dos criterios ortogonales:\n\nELPD para ajuste probabilístico (densidad predictiva en datos futuros).\nRMSE (más MAE, sMAPE, \\(R^2\\)) para precisión puntual en la escala original.\n\nUn pliegue gana solo si mejora ambos. El estadístico de soporte (victorias / pliegues) resume la estabilidad temporal; los resultados se clasifican por soporte, luego \\(\\Delta\\)ELPD, luego \\(\\Delta\\)RMSE."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#inicio-rápido-evaluación-diferida",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#inicio-rápido-evaluación-diferida",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "4. Inicio Rápido (evaluación diferida)",
+    "text": "4. Inicio Rápido (evaluación diferida)\n#| eval: false\n# GLM-AR(1)\nres_glm &lt;- bglmar1(\n  data_path = \"ruta/a/datos.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  max_lag = 3, test_h = 12, step_h = 12\n)\n\n# BSTS\nres_ss &lt;- bsts_model(\n  data_path = \"ruta/a/datos.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  lfo_h = 6, lfo_step = 6, seasonality = 12\n)\n\n# ECM-MARS\nres_ecm &lt;- ecm_mars(\n  data_path = \"ruta/a/datos.xlsx\",\n  circ_vars = c(\"...\"), prod_vars = c(\"...\"),\n  cointeg_rule = \"either\"\n)"
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#salidas-y-lectura-de-resultados",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#salidas-y-lectura-de-resultados",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "5. Salidas y Lectura de Resultados",
+    "text": "5. Salidas y Lectura de Resultados\nCada ejecutor escribe clasificaciones y listas de ganadores (soporte ≥ 0.70 / 0.60) y, para BSTS, diagnósticos de cobertura/PIT. Se proporcionan exportaciones CSV para inspección rápida o informes posteriores."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#decisiones-de-diseño-y-compensaciones",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#decisiones-de-diseño-y-compensaciones",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "6. Decisiones de Diseño y Compensaciones",
+    "text": "6. Decisiones de Diseño y Compensaciones\n\nEscalado por pliegue previene fuga de datos y mantiene HMC en escalas \\(\\mathcal{O}(1)\\).\nCriterios duales (ELPD + RMSE) filtran espejismos de métrica única.\nDiversidad de motores permite triangulación entre supuestos (AR(1) vs componentes estructurales vs cointegración + no linealidad)."
+  },
+  {
+    "objectID": "posts/2025-09-18-econcausal-esp/index.html#cuándo-usar-cuál",
+    "href": "posts/2025-09-18-econcausal-esp/index.html#cuándo-usar-cuál",
+    "title": "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Predictiva",
+    "section": "7. Cuándo Usar Cuál",
+    "text": "7. Cuándo Usar Cuál\n\nPrefiere GLM-AR1 para estructuras de rezago compactas y dependencia serial clara.\nPrefiere BSTS para descomposición, intervalos calibrados y selección automática.\nPrefiere ECM-MARS cuando la cointegración está teóricamente justificada y se espera no linealidad en las correcciones.\n\n\n\nNotas y Fuentes de Métodos\nLas notas concisas de métodos fueron adaptadas de los documentos metodológicos del paquete y encabezados de funciones. Ver el documento detallado de BGLM-AR1 (modelo, priors, LFO, diagnósticos), el marco de BSTS (ecuaciones de estado, selección, validación), y el protocolo ECM-MARS (I(1), cointegración, ajuste MARS).\n\n\nInterruptor de Reproducibilidad\nCambia eval: false a true en los chunks para ejecuciones en vivo. Los modelos pesados (BSTS y BGLM) usan MCMC; deshabilita la evaluación por velocidad en el renderizado del blog.\n\nPágina del proyecto: https://github.com/IsadoreNabi/EconCausal"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html",
+    "href": "posts/2025-09-18-topologyR/index.html",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "",
+    "text": "Many workflows jump straight into smoothing, imputation, or global trend estimation without checking whether the data behave as a single connected system. topologyR elevates local metric information (adjacent distances) into neighborhoods → base → full topology, then poses a decisive question: Is the induced topology connected? If yes, global continuity assumptions are supported; if no, you must segment and analyze components separately. This is the package’s central guardrail and value proposition. \nConcretely, topologyR provides a pipeline to: (i) build subbases/bases from numeric data with tunable thresholds, (ii) derive the induced topology and quantify its complexity, (iii) run undirected/directed/coverage connectivity checks, and (iv) explore how threshold choices change structure."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#why-a-topology-first-step",
+    "href": "posts/2025-09-18-topologyR/index.html#why-a-topology-first-step",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "1) Why a topology-first step?",
+    "text": "1) Why a topology-first step?\nMany workflows jump into smoothing, imputation, or global trend estimation without checking whether the data behave as a single connected system. topologyR elevates local metric information (adjacent distances) into neighborhoods → base → full topology, and then asks a decisive question: Is the induced topology connected? If yes, global continuity assumptions are supported; if no, you must segment and analyze components separately. \nDecision rule (guardrail).\n\nConnected ⇒ global continuous methods (splines/kriging/smoothers) are permissible.\nDisconnected ⇒ segment-wise imputation/regime models are required."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#what-topologyr-builds-for-you",
+    "href": "posts/2025-09-18-topologyR/index.html#what-topologyr-builds-for-you",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "2) What topologyR builds for you",
+    "text": "2) What topologyR builds for you\nA principled pipeline:\n\nNeighborhoods under a tunable threshold (e.g., IQR-based)\nBase from finite intersections (+ empty/full sets for correctness)\nFull topology from unions of base elements\nConnectivity checks: undirected, directed, and manual coverage\nThreshold exploration (mean/median diffs, SD, IQR/factor, DBSCAN-like) with summaries/plots"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#api-at-a-glance",
+    "href": "posts/2025-09-18-topologyR/index.html#api-at-a-glance",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "3) API at a glance",
+    "text": "3) API at a glance\n\ncomplete_topology(x) → neighborhoods → base → topology (didactic/exact for small n)\nanalyze_topology_factors(x, factors) → sweep IQR factors; report base size & set sizes\ncalculate_thresholds(x) → mean/median diffs, SD, IQR/factor, k-NN-like\nvisualize_topology_thresholds(x) → bar/point summaries for decision support\nis_topology_connected(...), is_topology_connected2(...), is_topology_connected_manual(...) → guardrails/variants for connectivity and coverage. \n\n# Minimal quick start\nlibrary(topologyR)\n\nx &lt;- c(1, 2, 3, 4, 5)\n\ntopo   &lt;- complete_topology(x)\nundirr &lt;- is_topology_connected(topo$topology)\ndirr   &lt;- is_topology_connected2(topo$topology)\ncover  &lt;- is_topology_connected_manual(topo$topology)\n\nths &lt;- calculate_thresholds(x)\nres &lt;- analyze_topology_factors(x, factors = c(1, 2, 4, 8, 16))\nviz &lt;- visualize_topology_thresholds(x)"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#connectivity-engines-and-when-to-use-them",
+    "href": "posts/2025-09-18-topologyR/index.html#connectivity-engines-and-when-to-use-them",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "4) Connectivity engines (and when to use them)",
+    "text": "4) Connectivity engines (and when to use them)\n\nUndirected connectivity (is_topology_connected) builds an undirected adjacency from set membership and runs DFS to check if all present elements are reachable. Good default guardrail. \nDirected connectivity (is_topology_connected2) adds direction along sorted elements inside each open set—useful when sequential ordering matters. \nManual coverage (is_topology_connected_manual) simply verifies that every original index (1..n) appears in at least one set—useful sanity check for completeness."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#threshold-heuristicswhat-changes-when-you-move-the-dial",
+    "href": "posts/2025-09-18-topologyR/index.html#threshold-heuristicswhat-changes-when-you-move-the-dial",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "5) Threshold heuristics—what changes when you move the dial?",
+    "text": "5) Threshold heuristics—what changes when you move the dial?\nYou can derive neighborhood thresholds from:\n\nMean / Median adjacent differences\nStandard Deviation\nIQR / factor (robust default; try 2, 4, 8, 16)\nDBSCAN-like density heuristic (k-NN-inspired) Each choice trades fineness vs. tractability; larger IQR factors → smaller thresholds → finer topology (more, smaller sets). \n\n# Compare threshold methods on a synthetic series\nset.seed(1)\nx &lt;- cumsum(rnorm(200))\n\nths  &lt;- calculate_thresholds(x)\nresf &lt;- analyze_topology_factors(x, factors = c(2, 4, 8, 16), plot = FALSE)\n\nprint(ths)\nprint(resf)\nPrefer median adjacent difference or density-based when robustness to outliers/local structure is key; still, test on your data and pick with the factor sweep. \nFor quick visual diagnostics across methods and their effect on base size, use:\nvisualize_topology_thresholds(x, plot = TRUE)\nIt produces three compact plots (thresholds by method, base size by method, and threshold vs base size)."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#the-imputationmodeling-guardrail-worked-example",
+    "href": "posts/2025-09-18-topologyR/index.html#the-imputationmodeling-guardrail-worked-example",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "6) The imputation/modeling guardrail (worked example)",
+    "text": "6) The imputation/modeling guardrail (worked example)\nThe following template enforces the guardrail before any global smoothing/imputation:\nx &lt;- as.numeric(AirPassengers)\n\ntau  &lt;- IQR(x)/4                        # transparent, robust default\ntopo &lt;- complete_topology(x)            # didactic for small n\n\nis_conn &lt;- is_topology_connected(topo$topology)\n\nif (is_conn) {\n  message(\"Connected → global continuous imputation allowed.\")\n  # e.g., global spline/kriging/smoother\n} else {\n  message(\"Disconnected → segment-wise imputation & regime models.\")\n  # split by connected components; impute/model per segment\n}\nThis pattern embodies the decision rule: connected ⇒ continuity globally; disconnected ⇒ segment-wise."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#performance-scalability-notes",
+    "href": "posts/2025-09-18-topologyR/index.html#performance-scalability-notes",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "7) Performance & scalability notes",
+    "text": "7) Performance & scalability notes\nExact neighborhood/base construction can grow quickly (≈ \\(O(n^2)\\)), so prefer robust thresholds and factor sweeps; for large n, approximate strategies keep runtimes human-friendly at the cost of exhaustive completeness (acceptable for governance/guardrail purposes)."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#positioning-vs-general-purpose-tda-limitations",
+    "href": "posts/2025-09-18-topologyR/index.html#positioning-vs-general-purpose-tda-limitations",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "8) Positioning (vs general-purpose TDA) & limitations",
+    "text": "8) Positioning (vs general-purpose TDA) & limitations\n\nPositioning. topologyR is a focused, decision-oriented pre-model tool for 1D series (β₀/connectedness). For multi-scale/higher-β structure, complement with PH stacks (Ripser/GUDHI/TDAstats/scikit-TDA). \nLimitations. Sensitivity to thresholds; sampling/noise can mimic (dis)connection; emphasis on β₀ only; naive exhaustive builds don’t scale. Treat connected ⇒ continuous as prima facie, not absolute—use the factor sweep + domain knowledge."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#installation",
+    "href": "posts/2025-09-18-topologyR/index.html#installation",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "14. Installation",
+    "text": "14. Installation\nremotes::install_github(\"IsadoreNabi/topologyR\")\n# or local build\n# setwd(\"/path/to/topologyR\"); library(devtools); library(roxygen2); document(); install()"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#appendix-function-internals-peek",
+    "href": "posts/2025-09-18-topologyR/index.html#appendix-function-internals-peek",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "10) Appendix — function internals (peek)",
+    "text": "10) Appendix — function internals (peek)\nInternally, connectivity checks build adjacency matrices from set membership and perform DFS; the factor sweeper creates subbases using abs(x_i - x_j) &lt;= IQR(x)/factor, then intersects to form a base (plus empty/full), and summarizes base sizes."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#problem-motivation-a-topology-first-guardrail",
+    "href": "posts/2025-09-18-topologyR/index.html#problem-motivation-a-topology-first-guardrail",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "",
+    "text": "Many workflows jump straight into smoothing, imputation, or global trend estimation without checking whether the data behave as a single connected system. topologyR elevates local metric information (adjacent distances) into neighborhoods → base → full topology, then poses a decisive question: Is the induced topology connected? If yes, global continuity assumptions are supported; if no, you must segment and analyze components separately. This is the package’s central guardrail and value proposition. \nConcretely, topologyR provides a pipeline to: (i) build subbases/bases from numeric data with tunable thresholds, (ii) derive the induced topology and quantify its complexity, (iii) run undirected/directed/coverage connectivity checks, and (iv) explore how threshold choices change structure."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#formal-definitions",
+    "href": "posts/2025-09-18-topologyR/index.html#formal-definitions",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "2. Formal Definitions",
+    "text": "2. Formal Definitions\nTopological space. Given a set \\(X\\), a topology \\(\\tau\\) on \\(X\\) is a family of subsets (the open sets) that contains \\(\\emptyset\\) and \\(X\\) and is closed under arbitrary unions and finite intersections; \\((X,\\tau)\\) is a topological space. \nBase & subbase (intuitive). From data, we form neighborhoods under a threshold \\(\\tau\\) (not the topology!), take finite intersections to form a base, and from unions of base elements obtain the full topology. In topologyR this is done explicitly from a numeric vector. \nConnectivity (β₀). We study whether the induced topology connects all present indices under either undirected or directed reachability, or at least covers all indices (manual check)."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#topologyr-pipeline-what-the-package-builds-for-you",
+    "href": "posts/2025-09-18-topologyR/index.html#topologyr-pipeline-what-the-package-builds-for-you",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "3. topologyR Pipeline: What the package builds for you?",
+    "text": "3. topologyR Pipeline: What the package builds for you?\n\nNeighborhoods under a tunable threshold (e.g., IQR-based)\nBase via intersections (include empty/full sets for correctness)\nFull topology from the base (closure under unions/finite intersections)\nConnectivity checks: undirected DFS, directed DFS, manual coverage\nThreshold exploration (mean/median diffs, SD, IQR/factor, DBSCAN-like) and factor sweep summaries/plots \n\nA compact R-sketch of the core algorithm appears below (the package implements a robust version): \n# Neighborhoods under τ\nsubbase &lt;- lapply(seq_along(x), function(i) which(abs(x - x[i]) &lt;= τ))\n\n# Base: include ∅ and X\nbase &lt;- list(integer(0), seq_along(x))\nfor (i in seq_along(x)) for (j in i:length(x)) {\n  S &lt;- intersect(subbase[[i]], subbase[[j]])\n  if (length(S) &gt; 0) base &lt;- c(base, list(S))\n}\nbase &lt;- unique(base)\n\n# From the base -&gt; topology (unions/finite intersections)\n# Connectivity checks:\n# is_topology_connected(topology)         # undirected DFS\n# is_topology_connected2(topology)        # directed DFS (sequential)\n# is_topology_connected_manual(topology)  # coverage 1..n"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#key-innovation",
+    "href": "posts/2025-09-18-topologyR/index.html#key-innovation",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "4. Key Innovation",
+    "text": "4. Key Innovation\n\n4.1. Revealing Topological Invariants to Validate Imputation Methods\n\n4.1.1. Introduction: The Fundamental Problem\nWe often assume global continuity (smoothing, kriging, splines, etc.) before verifying whether continuity is even mathematically defensible. topologyR fixes this by elevating local distances into a topology and reading off invariants (notably connectedness) that decide method validity. \n\n\n4.1.2. Conceptual Foundations\n4.1.2.1. The Nature of The Problem. Sequential data hide global properties critical for method choice: system connectivity, structural complexity, and breakpoints that may invalidate continuity. These are not visible from pairwise distances alone. \n4.1.2.2. The Topological Solution.\n\nMetric proximity → neighborhood relations\nNeighborhoods → subbase\nIntersections/unions → base and full topology\nTopology → invariants (connectivity) that govern method validity. \n\n\n\n4.1.3. The Theoretical Framework: Connectivity ⇒ Method Validity\nCase I: Connected Topology. Valid to use global continuous methods (polynomial/linear interpolation, cubic splines, kriging/geostatistics, moving averages, continuous kernels), assuming adequate sampling/noise. \nCase II: Disconnected topology. Global continuity is invalid; you must switch to segment-wise or regime approaches (independent imputation per component, regime-switching, conditional-by-segment, hot-deck within component, finite mixtures). \n\n\n4.1.4. Global vs Local Properties\nGlobal properties (full-period means, secular trend, systemic volatility, cycle structure, cointegration, long memory, global neural synchrony, centennial climate trends, circulation patterns) require connectivity; a disconnected topology invalidates global continuous imputation across the break. Local properties (short-window volatility, local derivatives, local clustering, AR(1)/AR(2) at short lags, local inflection points, short-segment spectra) can be analyzed per component regardless of global connectedness. \n\n\n4.1.5. Critical Applications by Domain\n\nEconometrics. Disconnections mark structural crises; avoid trends that cross discontinuities.\nMedicine/Neuroscience. Interventions can split regimes; test continuity before longitudinal pooling.\nClimatology. Extreme events can sever continuity; don’t extrapolate trends across regimes. \n\n\n\n4.1.6. Fundamental Decision Rule\n\nGlobal analyses: connectivity is necessary for continuous methods.\nLocal analyses: use continuous methods within each component.\nMixed: segment globally; apply local continuous tools inside each segment. \n\n\n\n4.1.7. Conclusions On the Fundamental Contribution\ntopologyR transforms imputation from heuristic to mathematically grounded procedure by revealing the underlying topological structure that justifies (or forbids) continuity assumptions before application — crucial in policy, biomedical, and climate contexts. \n\n\n4.1.8. Positioning vs General-Purpose TDA\nFocus: 1D series, β₀ (connectedness), explicit decision rule. Complement PH stacks (Ripser/GUDHI/TDAstats/scikit-TDA) for multi-scale/higher-β structure (no explicit imputation rule). \n\n\n4.1.9. Limitations and Risks\n\nParameter Sensitivity (threshold choice) → mitigate via factor sweeps; still empirical.\nSampling/noise can mimic (dis)connection → treat “connected ⇒ continuous” as prima facie.\nExpressivity limited to β₀.\nScalability: exhaustive builds can be \\(O(n^2)\\). \n\n\n\n4.1.10. Global conclusions & practical guidance\nUse topologyR as a pre-model governance tool for binary validity decisions; complement with PH for subtle multi-scale features that don’t break global connectedness. \n\n\n4.1.11. References\nAlvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., & Strømmen, K. (2025). Detecting the Indian Monsoon using Topological Data Analysis (arXiv:2504.01022). https://arxiv.org/abs/2504.01022\nBauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. Journal of Applied and Computational Topology, 5(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5\nChung, M. K., et al. (2023). Unified topological inference for brain networks in temporal dynamics. Frontiers in Neuroscience, 17, 1140289. https://doi.org/10.3389/fnins.2023.1140289\nFlammer, M., et al. (2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. SN Computer Science, 4, 396. https://doi.org/10.1007/s42979-023-02396-7\nGidea, M. (2017). Topological data analysis of financial time series (arXiv:1703.04385). https://arxiv.org/abs/1703.04385\nGuo, H., et al. (2020). Empirical study of financial crises based on topological data analysis. Physica A: Statistical Mechanics and its Applications, 551, 124198. https://doi.org/10.1016/j.physa.2019.124198\nKang, Y., et al. (2024). High-order brain network feature extraction and characterization via persistent homology. Frontiers in Neuroscience, 18, 1378837. https://doi.org/10.3389/fnins.2024.1378837\nKelley, J. L. (2017). General topology (Dover ed.; original work published 1955). Dover Publications.\nMaria, C., Boissonnat, J.-D., Glisse, M., & Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong & C. Yap (Eds.), Mathematical Software – ICMS 2014 (pp. 167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28\nOtter, N., Porter, M. A., Tillmann, U., Grindrod, P., & Harrington, H. A. (2017). A roadmap for the computation of persistent homology. EPJ Data Science, 6, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5\nscikit-TDA. (n.d.). scikit-TDA documentation. https://docs.scikit-tda.org/\nTralie, C., Saul, N., & Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. Journal of Open Source Software, 3(29), 925. https://doi.org/10.21105/joss.00925\nTymochko, S., et al. (2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. Pattern Recognition Letters, 133, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003\nVer Hoef, L., et al. (2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. AI for the Earth Systems, 2(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1\nWadhwa, R. R., Williamson, D. F. K., Dhawan, A., & Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. Journal of Open Source Software, 3(28), 860. https://doi.org/10.21105/joss.00860\nWang, Z., et al. (2023). Automatic epileptic seizure detection based on persistent homology. Computational and Mathematical Methods in Medicine, 2023, 9165842. https://doi.org/10.1155/2023/9165842\nXu, X., Gao, Y., Zhong, S., Li, P., & Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. Frontiers in Neuroscience, 15, 761703. https://doi.org/10.3389/fnins.2021.761703"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#scope-typical-use-cases",
+    "href": "posts/2025-09-18-topologyR/index.html#scope-typical-use-cases",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "5. Scope & Typical Use Cases",
+    "text": "5. Scope & Typical Use Cases\n\nEconomic & other time series: connectivity regimes, structural breaks.\nSignal/biological data: neighborhood graphs, coverage checks.\nDidactic: bases/subbases, topology construction, graph↔︎topology bridges."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#design-principles",
+    "href": "posts/2025-09-18-topologyR/index.html#design-principles",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "6. Design Principles",
+    "text": "6. Design Principles\nCorrectness (include ∅ and \\(X\\); track coverage), transparency (step-wise functions), explorability (fast heuristics & visuals for threshold selection)."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#technical-approach-algorithms-connectivity-engines",
+    "href": "posts/2025-09-18-topologyR/index.html#technical-approach-algorithms-connectivity-engines",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "7. Technical Approach: Algorithms & Connectivity Engines",
+    "text": "7. Technical Approach: Algorithms & Connectivity Engines\nCore Algorithm and Methods (undirected DFS; directed sequential DFS; manual coverage) as sketched in §3 above. \nConnectivity Functions (Package Internals).\n\nis_topology_connected() builds a symmetric adjacency from set co-membership and runs DFS over present elements.\nis_topology_connected2() directs edges along sorted, consecutive elements within each set and DFSs from the minimum.\nis_topology_connected_manual() checks whether each original index 1..n appears in at least one set."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#api-at-a-glance-quick-start",
+    "href": "posts/2025-09-18-topologyR/index.html#api-at-a-glance-quick-start",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "8. API at A Glance (Quick Start)",
+    "text": "8. API at A Glance (Quick Start)\nlibrary(topologyR)\n\n# Small example vector\nx &lt;- c(1, 2, 3, 4, 5)\n\n# Build a complete topology and check connectivity\ntopo     &lt;- complete_topology(x)\nundirected &lt;- is_topology_connected(topo$topology)\ndirected   &lt;- is_topology_connected2(topo$topology)\nmanual     &lt;- is_topology_connected_manual(topo$topology)\n\n# Threshold exploration and factor sweep\nths &lt;- calculate_thresholds(x)\nres &lt;- analyze_topology_factors(x, factors = c(1, 2, 4, 8, 16))\nviz &lt;- visualize_topology_thresholds(x)  # optional visuals"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#threshold-heuristics-factor-sweep",
+    "href": "posts/2025-09-18-topologyR/index.html#threshold-heuristics-factor-sweep",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "9. Threshold Heuristics & Factor Sweep",
+    "text": "9. Threshold Heuristics & Factor Sweep\nYou can derive τ from mean/median adjacent differences, SD, IQR / factor, or a DBSCAN-like heuristic; then run an IQR-factor sweep (e.g., 1, 2, 4, 8, 16) and track base size / set sizes to pick a stable regime. \nInternally, the factor sweep computes \\(\\tau=\\mathrm{IQR}(x)/f\\), builds subbases, forms the base (with ∅ and \\(X\\)), and summarizes base size and min/max set sizes per \\(f\\). \nset.seed(1)\nx &lt;- cumsum(rnorm(200))\n\nths  &lt;- calculate_thresholds(x)\nresf &lt;- analyze_topology_factors(x, factors = c(2, 4, 8, 16), plot = FALSE)\n\nprint(ths)\nprint(resf)"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#performance-scalability",
+    "href": "posts/2025-09-18-topologyR/index.html#performance-scalability",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "10. Performance & Scalability",
+    "text": "10. Performance & Scalability\nExact neighborhood/base construction can grow as \\(O(n^2)\\); prefer robust thresholds + factor sweeps, and consider down-sampling beyond moderate \\(n\\). For first-pass diagnostics on very large data, use the manual coverage check and then refine with directed DFS as needed."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#limitations-validity-notes",
+    "href": "posts/2025-09-18-topologyR/index.html#limitations-validity-notes",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "11. Limitations & Validity Notes",
+    "text": "11. Limitations & Validity Notes\n\nThreshold Sensitivity: false (dis)connections if τ is mis-set → mitigate with grids, but keep domain judgment.\nSampling/noise: sparse sampling may mimic disconnections; light overlaps may mimic connection → treat “connected ⇒ continuous” as prima facie, not absolute.\nExpressivity: emphasis on β₀; higher-order features require PH stacks.\nAssumptions: sequential indices 1..n; very large topologies can be memory-intensive."
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#end-to-end-example-imputation-decision",
+    "href": "posts/2025-09-18-topologyR/index.html#end-to-end-example-imputation-decision",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "12. End-To-End Example: Imputation Decision",
+    "text": "12. End-To-End Example: Imputation Decision\nlibrary(topologyR)\nx &lt;- as.numeric(AirPassengers)\n\n# Transparent, robust default for τ and illustrative factor sweep\nths  &lt;- calculate_thresholds(x)\nres  &lt;- analyze_topology_factors(x, factors = c(2,4,8,16), plot = FALSE)\n\ntau  &lt;- IQR(x)/4\ntopo &lt;- complete_topology(x)  # for small n; otherwise use thresholded subbases\n\nis_conn &lt;- is_topology_connected(topo$topology)\nif (is_conn) {\n  message(\"Connected: using global continuous imputation.\")\n  # e.g., stats::spline(...), global kriging, smoothers\n} else {\n  message(\"Disconnected: segment-wise imputation & regime models.\")\n  # split by connected components; impute/model per segment\n}"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#positioning-vs.-general-purpose-tda",
+    "href": "posts/2025-09-18-topologyR/index.html#positioning-vs.-general-purpose-tda",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "13. Positioning vs. General-Purpose TDA",
+    "text": "13. Positioning vs. General-Purpose TDA\ntopologyR is a focused, decision-oriented pre-model tool for 1D series (β₀/connectedness). For multi-scale/higher-β structure or early-warning signals, complement with Ripser/GUDHI/TDAstats/scikit-TDA. \n(Key external sources listed in the Wiki’s references subsection 4.1.11. of the library)"
+  },
+  {
+    "objectID": "posts/2025-09-18-topologyR/index.html#license-and-author",
+    "href": "posts/2025-09-18-topologyR/index.html#license-and-author",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "15. License and Author",
+    "text": "15. License and Author\nLICENSE: MIT License — see LICENSE in the repository.\nAUTHOR: José Mauricio Gómez Julián."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html",
+    "href": "posts/2025-09-19-topologyR-esp/index.html",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "",
+    "text": "Muchos flujos de trabajo saltan directamente al suavizado, imputación o estimación de tendencias globales sin verificar si los datos se comportan como un sistema conectado único. topologyR eleva la información métrica local (distancias adyacentes) a vecindarios → base → topología completa, y luego plantea una pregunta decisiva: ¿La topología inducida está conectada? Si la respuesta es sí, las suposiciones de continuidad global están respaldadas; si es no, debes segmentar y analizar los componentes por separado. Esta es la salvaguarda central y la propuesta de valor del paquete.\nConcretamente, topologyR proporciona un pipeline para: (i) construir subbases/bases a partir de datos numéricos con umbrales ajustables, (ii) derivar la topología inducida y cuantificar su complejidad, (iii) ejecutar verificaciones de conectividad no dirigida/dirigida/de cobertura, y (iv) explorar cómo las elecciones de umbral cambian la estructura."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#problema-y-motivación-una-salvaguarda-basada-en-topología",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#problema-y-motivación-una-salvaguarda-basada-en-topología",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "",
+    "text": "Muchos flujos de trabajo saltan directamente al suavizado, imputación o estimación de tendencias globales sin verificar si los datos se comportan como un sistema conectado único. topologyR eleva la información métrica local (distancias adyacentes) a vecindarios → base → topología completa, y luego plantea una pregunta decisiva: ¿La topología inducida está conectada? Si la respuesta es sí, las suposiciones de continuidad global están respaldadas; si es no, debes segmentar y analizar los componentes por separado. Esta es la salvaguarda central y la propuesta de valor del paquete.\nConcretamente, topologyR proporciona un pipeline para: (i) construir subbases/bases a partir de datos numéricos con umbrales ajustables, (ii) derivar la topología inducida y cuantificar su complejidad, (iii) ejecutar verificaciones de conectividad no dirigida/dirigida/de cobertura, y (iv) explorar cómo las elecciones de umbral cambian la estructura."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#definiciones-formales",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#definiciones-formales",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "2. Definiciones Formales",
+    "text": "2. Definiciones Formales\nEspacio topológico. Dado un conjunto \\(X\\), una topología \\(\\tau\\) sobre \\(X\\) es una familia de subconjuntos (los conjuntos abiertos) que contiene \\(\\emptyset\\) y \\(X\\) y está cerrada bajo uniones arbitrarias e intersecciones finitas; \\((X,\\tau)\\) es un espacio topológico.\nBase y subbase (intuitivo). A partir de los datos, formamos vecindarios bajo un umbral \\(\\tau\\) (¡no la topología!), tomamos intersecciones finitas para formar una base, y a partir de uniones de elementos de la base obtenemos la topología completa. En topologyR esto se hace explícitamente desde un vector numérico.\nConectividad (β₀). Estudiamos si la topología inducida conecta todos los índices presentes bajo alcanzabilidad no dirigida o dirigida, o al menos cubre todos los índices (verificación manual)."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#pipeline-de-topologyr-qué-construye-el-paquete-para-ti",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#pipeline-de-topologyr-qué-construye-el-paquete-para-ti",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "3. Pipeline de topologyR: ¿Qué construye el paquete para ti?",
+    "text": "3. Pipeline de topologyR: ¿Qué construye el paquete para ti?\n\nVecindarios bajo un umbral ajustable (ej., basado en IQR)\nBase mediante intersecciones (incluir conjuntos vacío/completo para corrección)\nTopología completa a partir de la base (clausura bajo uniones/intersecciones finitas)\nVerificaciones de conectividad: DFS no dirigido, DFS dirigido, cobertura manual\nExploración de umbrales (diferencias media/mediana, SD, IQR/factor, similar a DBSCAN) y resúmenes/gráficos de barrido de factores\n\nUn bosquejo R compacto del algoritmo central aparece a continuación (el paquete implementa una versión robusta):\n# Vecindarios bajo τ\nsubbase &lt;- lapply(seq_along(x), function(i) which(abs(x - x[i]) &lt;= τ))\n\n# Base: incluir ∅ y X\nbase &lt;- list(integer(0), seq_along(x))\nfor (i in seq_along(x)) for (j in i:length(x)) {\n  S &lt;- intersect(subbase[[i]], subbase[[j]])\n  if (length(S) &gt; 0) base &lt;- c(base, list(S))\n}\nbase &lt;- unique(base)\n\n# De la base -&gt; topología (uniones/intersecciones finitas)\n# Verificaciones de conectividad:\n# is_topology_connected(topology)         # DFS no dirigido\n# is_topology_connected2(topology)        # DFS dirigido (secuencial)\n# is_topology_connected_manual(topology)  # cobertura 1..n"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#innovación-clave",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#innovación-clave",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "4. Innovación Clave",
+    "text": "4. Innovación Clave\n\n4.1. Revelando Invariantes Topológicos para Validar Métodos de Imputación\n\n4.1.1. Introducción: El Problema Fundamental\nA menudo asumimos continuidad global (suavizado, kriging, splines, etc.) antes de verificar si la continuidad es siquiera matemáticamente defendible. topologyR arregla esto elevando las distancias locales a una topología y leyendo invariantes (notablemente conectividad) que deciden la validez del método.\n\n\n4.1.2. Fundamentos Conceptuales\n4.1.2.1. La Naturaleza del Problema. Los datos secuenciales ocultan propiedades globales críticas para la elección de método: conectividad del sistema, complejidad estructural y puntos de quiebre que pueden invalidar la continuidad. Estos no son visibles solo a partir de distancias por pares.\n4.1.2.2. La Solución Topológica.\n\nProximidad métrica → relaciones de vecindario\nVecindarios → subbase\nIntersecciones/uniones → base y topología completa\nTopología → invariantes (conectividad) que gobiernan la validez del método.\n\n\n\n4.1.3. El Marco Teórico: Conectividad ⇒ Validez del Método\nCaso I: Topología Conectada. Válido usar métodos continuos globales (interpolación polinomial/lineal, splines cúbicos, kriging/geoestadística, promedios móviles, kernels continuos), asumiendo muestreo/ruido adecuado.\nCaso II: Topología desconectada. La continuidad global es inválida; debes cambiar a enfoques por segmentos o regímenes (imputación independiente por componente, cambio de régimen, condicional por segmento, hot-deck dentro del componente, mezclas finitas).\n\n\n4.1.4. Propiedades Globales vs Locales\nLas propiedades globales (medias de período completo, tendencia secular, volatilidad sistémica, estructura de ciclos, cointegración, memoria larga, sincronía neural global, tendencias climáticas centenarias, patrones de circulación) requieren conectividad; una topología desconectada invalida la imputación continua global a través del quiebre. Las propiedades locales (volatilidad de ventana corta, derivadas locales, agrupamiento local, AR(1)/AR(2) en rezagos cortos, puntos de inflexión locales, espectros de segmento corto) pueden analizarse por componente independientemente de la conectividad global.\n\n\n4.1.5. Aplicaciones Críticas por Dominio\n\nEconometría. Las desconexiones marcan crisis estructurales; evitar tendencias que crucen discontinuidades.\nMedicina/Neurociencia. Las intervenciones pueden dividir regímenes; probar continuidad antes del agrupamiento longitudinal.\nClimatología. Los eventos extremos pueden cortar la continuidad; no extrapolar tendencias a través de regímenes.\n\n\n\n4.1.6. Regla de Decisión Fundamental\n\nAnálisis globales: la conectividad es necesaria para métodos continuos.\nAnálisis locales: usar métodos continuos dentro de cada componente.\nMixto: segmentar globalmente; aplicar herramientas continuas locales dentro de cada segmento.\n\n\n\n4.1.7. Conclusiones Sobre la Contribución Fundamental\ntopologyR transforma la imputación de procedimiento heurístico a matemáticamente fundamentado revelando la estructura topológica subyacente que justifica (o prohíbe) las suposiciones de continuidad antes de la aplicación — crucial en contextos de políticas, biomédicos y climáticos.\n\n\n4.1.8. Posicionamiento vs TDA de Propósito General\nEnfoque: series 1D, β₀ (conectividad), regla de decisión explícita. Complementa pilas PH (Ripser/GUDHI/TDAstats/scikit-TDA) para estructura multi-escala/β superior (sin regla de imputación explícita).\n\n\n4.1.9. Limitaciones y Riesgos\n\nSensibilidad de Parámetros (elección de umbral) → mitigar mediante barridos de factores; aún empírico.\nMuestreo/ruido puede simular (des)conexión → tratar “conectado ⇒ continuo” como prima facie.\nExpresividad limitada a β₀.\nEscalabilidad: construcciones exhaustivas pueden ser \\(O(n^2)\\).\n\n\n\n4.1.10. Conclusiones Globales y Orientación Práctica\nUsar topologyR como una herramienta de gobernanza pre-modelo para decisiones binarias de validez; complementar con PH para características multi-escala sutiles que no rompen la conectividad global.\n\n\n4.1.11. Referencias\nAlvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., & Strømmen, K. (2025). Detecting the Indian Monsoon using Topological Data Analysis (arXiv:2504.01022). https://arxiv.org/abs/2504.01022\nBauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. Journal of Applied and Computational Topology, 5(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5\nChung, M. K., et al. (2023). Unified topological inference for brain networks in temporal dynamics. Frontiers in Neuroscience, 17, 1140289. https://doi.org/10.3389/fnins.2023.1140289\nFlammer, M., et al. (2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. SN Computer Science, 4, 396. https://doi.org/10.1007/s42979-023-02396-7\nGidea, M. (2017). Topological data analysis of financial time series (arXiv:1703.04385). https://arxiv.org/abs/1703.04385\nGuo, H., et al. (2020). Empirical study of financial crises based on topological data analysis. Physica A: Statistical Mechanics and its Applications, 551, 124198. https://doi.org/10.1016/j.physa.2019.124198\nKang, Y., et al. (2024). High-order brain network feature extraction and characterization via persistent homology. Frontiers in Neuroscience, 18, 1378837. https://doi.org/10.3389/fnins.2024.1378837\nKelley, J. L. (2017). General topology (Dover ed.; original work published 1955). Dover Publications.\nMaria, C., Boissonnat, J.-D., Glisse, M., & Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong & C. Yap (Eds.), Mathematical Software – ICMS 2014 (pp. 167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28\nOtter, N., Porter, M. A., Tillmann, U., Grindrod, P., & Harrington, H. A. (2017). A roadmap for the computation of persistent homology. EPJ Data Science, 6, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5\nscikit-TDA. (n.d.). scikit-TDA documentation. https://docs.scikit-tda.org/\nTralie, C., Saul, N., & Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. Journal of Open Source Software, 3(29), 925. https://doi.org/10.21105/joss.00925\nTymochko, S., et al. (2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. Pattern Recognition Letters, 133, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003\nVer Hoef, L., et al. (2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. AI for the Earth Systems, 2(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1\nWadhwa, R. R., Williamson, D. F. K., Dhawan, A., & Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. Journal of Open Source Software, 3(28), 860. https://doi.org/10.21105/joss.00860\nWang, Z., et al. (2023). Automatic epileptic seizure detection based on persistent homology. Computational and Mathematical Methods in Medicine, 2023, 9165842. https://doi.org/10.1155/2023/9165842\nXu, X., Gao, Y., Zhong, S., Li, P., & Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. Frontiers in Neuroscience, 15, 761703. https://doi.org/10.3389/fnins.2021.761703"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#alcance-y-casos-de-uso-típicos",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#alcance-y-casos-de-uso-típicos",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "5. Alcance y Casos de Uso Típicos",
+    "text": "5. Alcance y Casos de Uso Típicos\n\nSeries temporales económicas y otras: regímenes de conectividad, quiebres estructurales.\nDatos de señales/biológicos: grafos de vecindario, verificaciones de cobertura.\nDidáctico: bases/subbases, construcción de topología, puentes grafo↔︎topología."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#principios-de-diseño",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#principios-de-diseño",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "6. Principios de Diseño",
+    "text": "6. Principios de Diseño\nCorrección (incluir ∅ y \\(X\\); rastrear cobertura), transparencia (funciones paso a paso), explorabilidad (heurísticas rápidas y visuales para selección de umbrales)."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#enfoque-técnico-algoritmos-y-motores-de-conectividad",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#enfoque-técnico-algoritmos-y-motores-de-conectividad",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "7. Enfoque Técnico: Algoritmos y Motores de Conectividad",
+    "text": "7. Enfoque Técnico: Algoritmos y Motores de Conectividad\nAlgoritmo Central y Métodos (DFS no dirigido; DFS secuencial dirigido; cobertura manual) como se bosqueja en §3 arriba.\nFunciones de Conectividad (Internos del Paquete).\n\nis_topology_connected() construye una adyacencia simétrica a partir de co-pertenencia de conjuntos y ejecuta DFS sobre elementos presentes.\nis_topology_connected2() dirige aristas a lo largo de elementos ordenados y consecutivos dentro de cada conjunto y hace DFS desde el mínimo.\nis_topology_connected_manual() verifica si cada índice original 1..n aparece en al menos un conjunto."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#api-de-un-vistazo-inicio-rápido",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#api-de-un-vistazo-inicio-rápido",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "8. API de un Vistazo (Inicio Rápido)",
+    "text": "8. API de un Vistazo (Inicio Rápido)\nlibrary(topologyR)\n\n# Vector de ejemplo pequeño\nx &lt;- c(1, 2, 3, 4, 5)\n\n# Construir una topología completa y verificar conectividad\ntopo     &lt;- complete_topology(x)\nundirected &lt;- is_topology_connected(topo$topology)\ndirected   &lt;- is_topology_connected2(topo$topology)\nmanual     &lt;- is_topology_connected_manual(topo$topology)\n\n# Exploración de umbrales y barrido de factores\nths &lt;- calculate_thresholds(x)\nres &lt;- analyze_topology_factors(x, factors = c(1, 2, 4, 8, 16))\nviz &lt;- visualize_topology_thresholds(x)  # visuales opcionales"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#heurísticas-de-umbral-y-barrido-de-factores",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#heurísticas-de-umbral-y-barrido-de-factores",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "9. Heurísticas de Umbral y Barrido de Factores",
+    "text": "9. Heurísticas de Umbral y Barrido de Factores\nPuedes derivar τ de diferencias adyacentes media/mediana, SD, IQR / factor, o una heurística similar a DBSCAN; luego ejecutar un barrido de factor IQR (ej., 1, 2, 4, 8, 16) y rastrear tamaño de base / tamaños de conjuntos para elegir un régimen estable.\nInternamente, el barrido de factores calcula \\(\\tau=\\mathrm{IQR}(x)/f\\), construye subbases, forma la base (con ∅ y \\(X\\)), y resume el tamaño de base y tamaños mín/máx de conjuntos por \\(f\\).\nset.seed(1)\nx &lt;- cumsum(rnorm(200))\n\nths  &lt;- calculate_thresholds(x)\nresf &lt;- analyze_topology_factors(x, factors = c(2, 4, 8, 16), plot = FALSE)\n\nprint(ths)\nprint(resf)"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#rendimiento-y-escalabilidad",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#rendimiento-y-escalabilidad",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "10. Rendimiento y Escalabilidad",
+    "text": "10. Rendimiento y Escalabilidad\nLa construcción exacta de vecindarios/base puede crecer como \\(O(n^2)\\); prefiere umbrales robustos + barridos de factores, y considera submuestreo más allá de \\(n\\) moderado. Para diagnósticos de primera pasada en datos muy grandes, usa la verificación de cobertura manual y luego refina con DFS dirigido según sea necesario."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#limitaciones-y-notas-de-validez",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#limitaciones-y-notas-de-validez",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "11. Limitaciones y Notas de Validez",
+    "text": "11. Limitaciones y Notas de Validez\n\nSensibilidad de Umbral: falsas (des)conexiones si τ está mal configurado → mitigar con rejillas, pero mantener juicio del dominio.\nMuestreo/ruido: el muestreo escaso puede simular desconexiones; las superposiciones ligeras pueden simular conexión → tratar “conectado ⇒ continuo” como prima facie, no absoluto.\nExpresividad: énfasis en β₀; características de orden superior requieren pilas PH.\nSuposiciones: índices secuenciales 1..n; topologías muy grandes pueden ser intensivas en memoria."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#ejemplo-completo-decisión-de-imputación",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#ejemplo-completo-decisión-de-imputación",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "12. Ejemplo Completo: Decisión de Imputación",
+    "text": "12. Ejemplo Completo: Decisión de Imputación\nlibrary(topologyR)\nx &lt;- as.numeric(AirPassengers)\n\n# Predeterminado transparente y robusto para τ y barrido de factores ilustrativo\nths  &lt;- calculate_thresholds(x)\nres  &lt;- analyze_topology_factors(x, factors = c(2,4,8,16), plot = FALSE)\n\ntau  &lt;- IQR(x)/4\ntopo &lt;- complete_topology(x)  # para n pequeño; de lo contrario usar subbases con umbral\n\nis_conn &lt;- is_topology_connected(topo$topology)\nif (is_conn) {\n  message(\"Conectado: usando imputación continua global.\")\n  # ej., stats::spline(...), kriging global, suavizadores\n} else {\n  message(\"Desconectado: imputación por segmentos y modelos de régimen.\")\n  # dividir por componentes conectados; imputar/modelar por segmento\n}"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#posicionamiento-vs.-tda-de-propósito-general",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#posicionamiento-vs.-tda-de-propósito-general",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "13. Posicionamiento vs. TDA de Propósito General",
+    "text": "13. Posicionamiento vs. TDA de Propósito General\ntopologyR es una herramienta pre-modelo enfocada y orientada a decisiones para series 1D (β₀/conectividad). Para estructura multi-escala/β superior o señales de alerta temprana, complementar con Ripser/GUDHI/TDAstats/scikit-TDA.\n(Fuentes externas clave listadas en la subsección de referencias 4.1.11. de la wiki de la biblioteca)"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#instalación",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#instalación",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "14. Instalación",
+    "text": "14. Instalación\nremotes::install_github(\"IsadoreNabi/topologyR\")\n# o construcción local\n# setwd(\"/path/to/topologyR\"); library(devtools); library(roxygen2); document(); install()"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR-esp/index.html#licencia-y-autor",
+    "href": "posts/2025-09-19-topologyR-esp/index.html#licencia-y-autor",
+    "title": "topologyR: Una Salvaguarda Basada en Topología para Imputación y Modelado de Series Temporales",
+    "section": "15. Licencia y Autor",
+    "text": "15. Licencia y Autor\nLICENCIA: Licencia MIT — ver LICENSE en el repositorio.\nAUTOR: José Mauricio Gómez Julián."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html",
+    "href": "posts/2025-09-19-topologyR/index.html",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "",
+    "text": "Many workflows jump straight into smoothing, imputation, or global trend estimation without checking whether the data behave as a single connected system. topologyR elevates local metric information (adjacent distances) into neighborhoods → base → full topology, then poses a decisive question: Is the induced topology connected? If yes, global continuity assumptions are supported; if no, you must segment and analyze components separately. This is the package’s central guardrail and value proposition. \nConcretely, topologyR provides a pipeline to: (i) build subbases/bases from numeric data with tunable thresholds, (ii) derive the induced topology and quantify its complexity, (iii) run undirected/directed/coverage connectivity checks, and (iv) explore how threshold choices change structure."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#problem-motivation-a-topology-first-guardrail",
+    "href": "posts/2025-09-19-topologyR/index.html#problem-motivation-a-topology-first-guardrail",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "",
+    "text": "Many workflows jump straight into smoothing, imputation, or global trend estimation without checking whether the data behave as a single connected system. topologyR elevates local metric information (adjacent distances) into neighborhoods → base → full topology, then poses a decisive question: Is the induced topology connected? If yes, global continuity assumptions are supported; if no, you must segment and analyze components separately. This is the package’s central guardrail and value proposition. \nConcretely, topologyR provides a pipeline to: (i) build subbases/bases from numeric data with tunable thresholds, (ii) derive the induced topology and quantify its complexity, (iii) run undirected/directed/coverage connectivity checks, and (iv) explore how threshold choices change structure."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#formal-definitions",
+    "href": "posts/2025-09-19-topologyR/index.html#formal-definitions",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "2. Formal Definitions",
+    "text": "2. Formal Definitions\nTopological space. Given a set \\(X\\), a topology \\(\\tau\\) on \\(X\\) is a family of subsets (the open sets) that contains \\(\\emptyset\\) and \\(X\\) and is closed under arbitrary unions and finite intersections; \\((X,\\tau)\\) is a topological space. \nBase & subbase (intuitive). From data, we form neighborhoods under a threshold \\(\\tau\\) (not the topology!), take finite intersections to form a base, and from unions of base elements obtain the full topology. In topologyR this is done explicitly from a numeric vector. \nConnectivity (β₀). We study whether the induced topology connects all present indices under either undirected or directed reachability, or at least covers all indices (manual check)."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#topologyr-pipeline-what-the-package-builds-for-you",
+    "href": "posts/2025-09-19-topologyR/index.html#topologyr-pipeline-what-the-package-builds-for-you",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "3. topologyR Pipeline: What the package builds for you?",
+    "text": "3. topologyR Pipeline: What the package builds for you?\n\nNeighborhoods under a tunable threshold (e.g., IQR-based)\nBase via intersections (include empty/full sets for correctness)\nFull topology from the base (closure under unions/finite intersections)\nConnectivity checks: undirected DFS, directed DFS, manual coverage\nThreshold exploration (mean/median diffs, SD, IQR/factor, DBSCAN-like) and factor sweep summaries/plots \n\nA compact R-sketch of the core algorithm appears below (the package implements a robust version): \n# Neighborhoods under τ\nsubbase &lt;- lapply(seq_along(x), function(i) which(abs(x - x[i]) &lt;= τ))\n\n# Base: include ∅ and X\nbase &lt;- list(integer(0), seq_along(x))\nfor (i in seq_along(x)) for (j in i:length(x)) {\n  S &lt;- intersect(subbase[[i]], subbase[[j]])\n  if (length(S) &gt; 0) base &lt;- c(base, list(S))\n}\nbase &lt;- unique(base)\n\n# From the base -&gt; topology (unions/finite intersections)\n# Connectivity checks:\n# is_topology_connected(topology)         # undirected DFS\n# is_topology_connected2(topology)        # directed DFS (sequential)\n# is_topology_connected_manual(topology)  # coverage 1..n"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#key-innovation",
+    "href": "posts/2025-09-19-topologyR/index.html#key-innovation",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "4. Key Innovation",
+    "text": "4. Key Innovation\n\n4.1. Revealing Topological Invariants to Validate Imputation Methods\n\n4.1.1. Introduction: The Fundamental Problem\nWe often assume global continuity (smoothing, kriging, splines, etc.) before verifying whether continuity is even mathematically defensible. topologyR fixes this by elevating local distances into a topology and reading off invariants (notably connectedness) that decide method validity. \n\n\n4.1.2. Conceptual Foundations\n4.1.2.1. The Nature of The Problem. Sequential data hide global properties critical for method choice: system connectivity, structural complexity, and breakpoints that may invalidate continuity. These are not visible from pairwise distances alone. \n4.1.2.2. The Topological Solution.\n\nMetric proximity → neighborhood relations\nNeighborhoods → subbase\nIntersections/unions → base and full topology\nTopology → invariants (connectivity) that govern method validity. \n\n\n\n4.1.3. The Theoretical Framework: Connectivity ⇒ Method Validity\nCase I: Connected Topology. Valid to use global continuous methods (polynomial/linear interpolation, cubic splines, kriging/geostatistics, moving averages, continuous kernels), assuming adequate sampling/noise. \nCase II: Disconnected topology. Global continuity is invalid; you must switch to segment-wise or regime approaches (independent imputation per component, regime-switching, conditional-by-segment, hot-deck within component, finite mixtures). \n\n\n4.1.4. Global vs Local Properties\nGlobal properties (full-period means, secular trend, systemic volatility, cycle structure, cointegration, long memory, global neural synchrony, centennial climate trends, circulation patterns) require connectivity; a disconnected topology invalidates global continuous imputation across the break. Local properties (short-window volatility, local derivatives, local clustering, AR(1)/AR(2) at short lags, local inflection points, short-segment spectra) can be analyzed per component regardless of global connectedness. \n\n\n4.1.5. Critical Applications by Domain\n\nEconometrics. Disconnections mark structural crises; avoid trends that cross discontinuities.\nMedicine/Neuroscience. Interventions can split regimes; test continuity before longitudinal pooling.\nClimatology. Extreme events can sever continuity; don’t extrapolate trends across regimes. \n\n\n\n4.1.6. Fundamental Decision Rule\n\nGlobal analyses: connectivity is necessary for continuous methods.\nLocal analyses: use continuous methods within each component.\nMixed: segment globally; apply local continuous tools inside each segment. \n\n\n\n4.1.7. Conclusions On the Fundamental Contribution\ntopologyR transforms imputation from heuristic to mathematically grounded procedure by revealing the underlying topological structure that justifies (or forbids) continuity assumptions before application — crucial in policy, biomedical, and climate contexts. \n\n\n4.1.8. Positioning vs General-Purpose TDA\nFocus: 1D series, β₀ (connectedness), explicit decision rule. Complement PH stacks (Ripser/GUDHI/TDAstats/scikit-TDA) for multi-scale/higher-β structure (no explicit imputation rule). \n\n\n4.1.9. Limitations and Risks\n\nParameter Sensitivity (threshold choice) → mitigate via factor sweeps; still empirical.\nSampling/noise can mimic (dis)connection → treat “connected ⇒ continuous” as prima facie.\nExpressivity limited to β₀.\nScalability: exhaustive builds can be \\(O(n^2)\\). \n\n\n\n4.1.10. Global conclusions & practical guidance\nUse topologyR as a pre-model governance tool for binary validity decisions; complement with PH for subtle multi-scale features that don’t break global connectedness. \n\n\n4.1.11. References\nAlvarado, E., Beckelhymer, D., Dorrington, J., Lam, T., Majhi, S., Noory, J., Sánchez Muniz, M., & Strømmen, K. (2025). Detecting the Indian Monsoon using Topological Data Analysis (arXiv:2504.01022). https://arxiv.org/abs/2504.01022\nBauer, U. (2021). Ripser: Efficient computation of Vietoris–Rips persistence barcodes. Journal of Applied and Computational Topology, 5(3), 391–423. https://doi.org/10.1007/s41468-021-00071-5\nChung, M. K., et al. (2023). Unified topological inference for brain networks in temporal dynamics. Frontiers in Neuroscience, 17, 1140289. https://doi.org/10.3389/fnins.2023.1140289\nFlammer, M., et al. (2023). Persistent homology-based classification of chaotic multivariate time series: Application to electroencephalograms. SN Computer Science, 4, 396. https://doi.org/10.1007/s42979-023-02396-7\nGidea, M. (2017). Topological data analysis of financial time series (arXiv:1703.04385). https://arxiv.org/abs/1703.04385\nGuo, H., et al. (2020). Empirical study of financial crises based on topological data analysis. Physica A: Statistical Mechanics and its Applications, 551, 124198. https://doi.org/10.1016/j.physa.2019.124198\nKang, Y., et al. (2024). High-order brain network feature extraction and characterization via persistent homology. Frontiers in Neuroscience, 18, 1378837. https://doi.org/10.3389/fnins.2024.1378837\nKelley, J. L. (2017). General topology (Dover ed.; original work published 1955). Dover Publications.\nMaria, C., Boissonnat, J.-D., Glisse, M., & Yvinec, M. (2014). The GUDHI library: Simplicial complexes and persistent homology. In H. Hong & C. Yap (Eds.), Mathematical Software – ICMS 2014 (pp. 167–174). Springer. https://doi.org/10.1007/978-3-662-44199-2_28\nOtter, N., Porter, M. A., Tillmann, U., Grindrod, P., & Harrington, H. A. (2017). A roadmap for the computation of persistent homology. EPJ Data Science, 6, 17. https://doi.org/10.1140/epjds/s13688-017-0109-5\nscikit-TDA. (n.d.). scikit-TDA documentation. https://docs.scikit-tda.org/\nTralie, C., Saul, N., & Bar-On, R. (2018). ripser.py: A lean persistent homology library for Python. Journal of Open Source Software, 3(29), 925. https://doi.org/10.21105/joss.00925\nTymochko, S., et al. (2020). Using persistent homology to quantify a diurnal cycle in tropical cyclone convection. Pattern Recognition Letters, 133, 137–143. https://doi.org/10.1016/j.patrec.2020.02.003\nVer Hoef, L., et al. (2023). A primer on topological data analysis to support image segmentation and feature extraction for environmental science. AI for the Earth Systems, 2(1), e220039. https://doi.org/10.1175/AIES-D-22-0039.1\nWadhwa, R. R., Williamson, D. F. K., Dhawan, A., & Scott, J. G. (2018). TDAstats: R pipeline for computing persistent homology in topological data analysis. Journal of Open Source Software, 3(28), 860. https://doi.org/10.21105/joss.00860\nWang, Z., et al. (2023). Automatic epileptic seizure detection based on persistent homology. Computational and Mathematical Methods in Medicine, 2023, 9165842. https://doi.org/10.1155/2023/9165842\nXu, X., Gao, Y., Zhong, S., Li, P., & Wang, Y. (2021). Topological data analysis as a new tool for EEG processing. Frontiers in Neuroscience, 15, 761703. https://doi.org/10.3389/fnins.2021.761703"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#scope-typical-use-cases",
+    "href": "posts/2025-09-19-topologyR/index.html#scope-typical-use-cases",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "5. Scope & Typical Use Cases",
+    "text": "5. Scope & Typical Use Cases\n\nEconomic & other time series: connectivity regimes, structural breaks.\nSignal/biological data: neighborhood graphs, coverage checks.\nDidactic: bases/subbases, topology construction, graph↔︎topology bridges."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#design-principles",
+    "href": "posts/2025-09-19-topologyR/index.html#design-principles",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "6. Design Principles",
+    "text": "6. Design Principles\nCorrectness (include ∅ and \\(X\\); track coverage), transparency (step-wise functions), explorability (fast heuristics & visuals for threshold selection)."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#technical-approach-algorithms-connectivity-engines",
+    "href": "posts/2025-09-19-topologyR/index.html#technical-approach-algorithms-connectivity-engines",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "7. Technical Approach: Algorithms & Connectivity Engines",
+    "text": "7. Technical Approach: Algorithms & Connectivity Engines\nCore Algorithm and Methods (undirected DFS; directed sequential DFS; manual coverage) as sketched in §3 above. \nConnectivity Functions (Package Internals).\n\nis_topology_connected() builds a symmetric adjacency from set co-membership and runs DFS over present elements.\nis_topology_connected2() directs edges along sorted, consecutive elements within each set and DFSs from the minimum.\nis_topology_connected_manual() checks whether each original index 1..n appears in at least one set."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#api-at-a-glance-quick-start",
+    "href": "posts/2025-09-19-topologyR/index.html#api-at-a-glance-quick-start",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "8. API at A Glance (Quick Start)",
+    "text": "8. API at A Glance (Quick Start)\nlibrary(topologyR)\n\n# Small example vector\nx &lt;- c(1, 2, 3, 4, 5)\n\n# Build a complete topology and check connectivity\ntopo     &lt;- complete_topology(x)\nundirected &lt;- is_topology_connected(topo$topology)\ndirected   &lt;- is_topology_connected2(topo$topology)\nmanual     &lt;- is_topology_connected_manual(topo$topology)\n\n# Threshold exploration and factor sweep\nths &lt;- calculate_thresholds(x)\nres &lt;- analyze_topology_factors(x, factors = c(1, 2, 4, 8, 16))\nviz &lt;- visualize_topology_thresholds(x)  # optional visuals"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#threshold-heuristics-factor-sweep",
+    "href": "posts/2025-09-19-topologyR/index.html#threshold-heuristics-factor-sweep",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "9. Threshold Heuristics & Factor Sweep",
+    "text": "9. Threshold Heuristics & Factor Sweep\nYou can derive τ from mean/median adjacent differences, SD, IQR / factor, or a DBSCAN-like heuristic; then run an IQR-factor sweep (e.g., 1, 2, 4, 8, 16) and track base size / set sizes to pick a stable regime. \nInternally, the factor sweep computes \\(\\tau=\\mathrm{IQR}(x)/f\\), builds subbases, forms the base (with ∅ and \\(X\\)), and summarizes base size and min/max set sizes per \\(f\\). \nset.seed(1)\nx &lt;- cumsum(rnorm(200))\n\nths  &lt;- calculate_thresholds(x)\nresf &lt;- analyze_topology_factors(x, factors = c(2, 4, 8, 16), plot = FALSE)\n\nprint(ths)\nprint(resf)"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#performance-scalability",
+    "href": "posts/2025-09-19-topologyR/index.html#performance-scalability",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "10. Performance & Scalability",
+    "text": "10. Performance & Scalability\nExact neighborhood/base construction can grow as \\(O(n^2)\\); prefer robust thresholds + factor sweeps, and consider down-sampling beyond moderate \\(n\\). For first-pass diagnostics on very large data, use the manual coverage check and then refine with directed DFS as needed."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#limitations-validity-notes",
+    "href": "posts/2025-09-19-topologyR/index.html#limitations-validity-notes",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "11. Limitations & Validity Notes",
+    "text": "11. Limitations & Validity Notes\n\nThreshold Sensitivity: false (dis)connections if τ is mis-set → mitigate with grids, but keep domain judgment.\nSampling/noise: sparse sampling may mimic disconnections; light overlaps may mimic connection → treat “connected ⇒ continuous” as prima facie, not absolute.\nExpressivity: emphasis on β₀; higher-order features require PH stacks.\nAssumptions: sequential indices 1..n; very large topologies can be memory-intensive."
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#end-to-end-example-imputation-decision",
+    "href": "posts/2025-09-19-topologyR/index.html#end-to-end-example-imputation-decision",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "12. End-To-End Example: Imputation Decision",
+    "text": "12. End-To-End Example: Imputation Decision\nlibrary(topologyR)\nx &lt;- as.numeric(AirPassengers)\n\n# Transparent, robust default for τ and illustrative factor sweep\nths  &lt;- calculate_thresholds(x)\nres  &lt;- analyze_topology_factors(x, factors = c(2,4,8,16), plot = FALSE)\n\ntau  &lt;- IQR(x)/4\ntopo &lt;- complete_topology(x)  # for small n; otherwise use thresholded subbases\n\nis_conn &lt;- is_topology_connected(topo$topology)\nif (is_conn) {\n  message(\"Connected: using global continuous imputation.\")\n  # e.g., stats::spline(...), global kriging, smoothers\n} else {\n  message(\"Disconnected: segment-wise imputation & regime models.\")\n  # split by connected components; impute/model per segment\n}"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#positioning-vs.-general-purpose-tda",
+    "href": "posts/2025-09-19-topologyR/index.html#positioning-vs.-general-purpose-tda",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "13. Positioning vs. General-Purpose TDA",
+    "text": "13. Positioning vs. General-Purpose TDA\ntopologyR is a focused, decision-oriented pre-model tool for 1D series (β₀/connectedness). For multi-scale/higher-β structure or early-warning signals, complement with Ripser/GUDHI/TDAstats/scikit-TDA. \n(Key external sources listed in the Wiki’s references subsection 4.1.11. of the library)"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#installation",
+    "href": "posts/2025-09-19-topologyR/index.html#installation",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "14. Installation",
+    "text": "14. Installation\nremotes::install_github(\"IsadoreNabi/topologyR\")\n# or local build\n# setwd(\"/path/to/topologyR\"); library(devtools); library(roxygen2); document(); install()"
+  },
+  {
+    "objectID": "posts/2025-09-19-topologyR/index.html#license-and-author",
+    "href": "posts/2025-09-19-topologyR/index.html#license-and-author",
+    "title": "topologyR: A Topology-First Guardrail for Time-Series Imputation and Modeling",
+    "section": "15. License and Author",
+    "text": "15. License and Author\nLICENSE: MIT License — see LICENSE in the repository.\nAUTHOR: José Mauricio Gómez Julián."
   }
 ]
