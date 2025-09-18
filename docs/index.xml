@@ -530,6 +530,33 @@ font-style: inherit;"># setwd("/path/to/topologyR"); library(devtools); library(
   <category>R</category>
   <category>topology</category>
   <category>time-series</category>
+  <category>Topological Data Analysis</category>
+  <category>Time Series Analysis</category>
+  <category>Data Imputation</category>
+  <category>Mathematical Modeling</category>
+  <category>Connectivity Analysis</category>
+  <category>Structural Breaks</category>
+  <category>Time Series Segmentation</category>
+  <category>Computational Topology</category>
+  <category>Persistent Homology</category>
+  <category>Method Validation</category>
+  <category>Decision Rules</category>
+  <category>Econometrics</category>
+  <category>Neuroscience Applications</category>
+  <category>Climate Science</category>
+  <category>Signal Processing</category>
+  <category>Algorithm Development</category>
+  <category>Statistical Software</category>
+  <category>Data Quality Assurance</category>
+  <category>Model Governance</category>
+  <category>Mathematical Statistics</category>
+  <category>Statistics</category>
+  <category>Mathematics</category>
+  <category>Applied Mathematics</category>
+  <category>Imputation</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR/</guid>
   <pubDate>Thu, 18 Sep 2025 06:00:00 GMT</pubDate>
 </item>
@@ -1052,6 +1079,33 @@ font-style: inherit;"># setwd("/path/to/topologyR"); library(devtools); library(
   <category>R</category>
   <category>topología</category>
   <category>series-temporales</category>
+  <category>Análisis Topológico de Datos</category>
+  <category>Análisis de Series Temporales</category>
+  <category>Imputación de Datos</category>
+  <category>Modelado Matemático</category>
+  <category>Análisis de Conectividad</category>
+  <category>Quiebres Estructurales</category>
+  <category>Segmentación de Series Temporales</category>
+  <category>Topología Computacional</category>
+  <category>Homología Persistente</category>
+  <category>Validación de Métodos</category>
+  <category>Reglas de Decisión</category>
+  <category>Econometría</category>
+  <category>Aplicaciones en Neurociencia</category>
+  <category>Ciencias del Clima</category>
+  <category>Procesamiento de Señales</category>
+  <category>Desarrollo de Algoritmos</category>
+  <category>Software</category>
+  <category>Garantía de Calidad de Datos</category>
+  <category>Gobernanza de Modelos</category>
+  <category>Estadística Matemática</category>
+  <category>Matemáticas Aplicadas</category>
+  <category>Imputación</category>
+  <category>Estadística</category>
+  <category>Matemática</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-19-topologyR-esp/</guid>
   <pubDate>Thu, 18 Sep 2025 06:00:00 GMT</pubDate>
 </item>
@@ -1460,6 +1514,33 @@ font-style: inherit;">$</span>metrics</span></code></pre></div></div>
   <category>R</category>
   <category>packages</category>
   <category>Bayesian</category>
+  <category>Econometrics</category>
+  <category>Data Science</category>
+  <category>Statistics</category>
+  <category>Time Series</category>
+  <category>Disaggregation</category>
+  <category>PCA</category>
+  <category>SVD</category>
+  <category>Bayesian Inference</category>
+  <category>Compositional Data</category>
+  <category>Economic Analysis</category>
+  <category>CPI</category>
+  <category>Inflation</category>
+  <category>Uncertainty Quantification</category>
+  <category>Analytical Methods</category>
+  <category>Structure Transfer</category>
+  <category>Neuroscience Applications</category>
+  <category>Climate Science</category>
+  <category>Epidemiology</category>
+  <category>Signal Processing</category>
+  <category>Machine Learning</category>
+  <category>Policy Analysis</category>
+  <category>Central Banking</category>
+  <category>Research</category>
+  <category>Method</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-bayesian-disaggregation/</guid>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>
@@ -1821,6 +1902,33 @@ font-style: inherit;">$</span>metrics</span></code></pre></div></div>
   <category>R</category>
   <category>packages</category>
   <category>Bayesian</category>
+  <category>Econometría</category>
+  <category>Ciencia de Datos</category>
+  <category>Estadística</category>
+  <category>Series de Tiempo</category>
+  <category>Desagregación</category>
+  <category>PCA</category>
+  <category>SVD</category>
+  <category>Inferencia Bayesiana</category>
+  <category>Datos Composicionales</category>
+  <category>Análisis Económico</category>
+  <category>IPC</category>
+  <category>Inflación</category>
+  <category>Cuantificación de Incertidumbre</category>
+  <category>Métodos Analíticos</category>
+  <category>Transferencia de Estructura</category>
+  <category>Aplicaciones en Neurociencia</category>
+  <category>Climatología</category>
+  <category>Epidemiología</category>
+  <category>Procesamiento de Señales</category>
+  <category>Aprendizaje Automático</category>
+  <category>Análisis de Políticas</category>
+  <category>Banca Central</category>
+  <category>Método</category>
+  <category>Investigación</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-17-desagregacion-bayesiana/</guid>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>
@@ -2143,6 +2251,32 @@ font-style: inherit;">"either"</span></span>
   <category>packages</category>
   <category>Bayesian</category>
   <category>econometrics</category>
+  <category>Causal Inference</category>
+  <category>Time Series Analysis</category>
+  <category>Predictive Modeling</category>
+  <category>Structural Time Series</category>
+  <category>Error Correction Models</category>
+  <category>MARS</category>
+  <category>Machine Learning</category>
+  <category>Statistical Validation</category>
+  <category>Out-of-Sample Testing</category>
+  <category>ELPD</category>
+  <category>Econometric Modeling</category>
+  <category>State Space Models</category>
+  <category>Spike-and-Slab</category>
+  <category>Cointegration</category>
+  <category>Nonlinear Modeling</category>
+  <category>Probabilistic Forecasting</category>
+  <category>Model Comparison</category>
+  <category>Triangulation Methods</category>
+  <category>Economic Forecasting</category>
+  <category>Financial Econometrics</category>
+  <category>Applied</category>
+  <category>Applications</category>
+  <category>Econometrics</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal/</guid>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>
@@ -2465,6 +2599,31 @@ font-style: inherit;">"either"</span></span>
   <category>paquetes</category>
   <category>Bayesiano</category>
   <category>econometría</category>
+  <category>Inferencia Causal</category>
+  <category>Análisis de Series de Tiempo</category>
+  <category>Modelado Predictivo</category>
+  <category>Series de Tiempo Estructurales</category>
+  <category>Modelos de Corrección de Error</category>
+  <category>MARS</category>
+  <category>Aprendizaje Automático</category>
+  <category>Validación Estadística</category>
+  <category>Pruebas Fuera de Muestra</category>
+  <category>ELPD</category>
+  <category>Modelado Econométrico</category>
+  <category>Modelos de Espacio de Estado</category>
+  <category>Spike-and-Slab</category>
+  <category>Cointegración</category>
+  <category>Modelado No Lineal</category>
+  <category>Pronóstico Probabilístico</category>
+  <category>Comparación de Modelos</category>
+  <category>Métodos de Triangulación</category>
+  <category>Pronóstico Económico</category>
+  <category>Econometría Financiera</category>
+  <category>Econometría</category>
+  <category>Aplicaciones</category>
+  <category>Marx</category>
+  <category>Engels</category>
+  <category>GitHub</category>
   <guid>https://IsadoreNabi.github.io/philosophy-of-statistics/posts/2025-09-18-econcausal-esp/</guid>
   <pubDate>Wed, 17 Sep 2025 06:00:00 GMT</pubDate>
 </item>

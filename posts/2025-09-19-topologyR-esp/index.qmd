@@ -3,7 +3,7 @@ title: "topologyR: Una Salvaguarda Basada en Topología para Imputación y Model
 description: "De vecindarios → base → topología completa, hacia una regla de decisión clara: cuándo la continuidad global es válida — y cuándo la segmentación es obligatoria."
 author: "José Mauricio Gómez Julián"
 date: 2025-09-18
-categories: [R, topología, series-temporales]
+categories: [R, topología, series-temporales, Análisis Topológico de Datos, Análisis de Series Temporales, Imputación de Datos, Modelado Matemático, Análisis de Conectividad, Quiebres Estructurales, Segmentación de Series Temporales, Topología Computacional, Homología Persistente, Validación de Métodos, Reglas de Decisión, Econometría, Aplicaciones en Neurociencia, Ciencias del Clima, Procesamiento de Señales, Desarrollo de Algoritmos, Software, Garantía de Calidad de Datos, Gobernanza de Modelos, Estadística Matemática, Matemáticas Aplicadas, Imputación, Estadística, Matemática, Marx, Engels, GitHub]
 format:
   html:
     toc: true

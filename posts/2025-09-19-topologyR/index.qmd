@@ -3,7 +3,7 @@ title: "topologyR: A Topology-First Guardrail for Time-Series Imputation and Mod
 description: "From neighborhoods → base → full topology, to a clear decision rule: when global continuity is valid — and when segmentation is mandatory."
 author: "José Mauricio Gómez Julián"
 date: 2025-09-18
-categories: [R, topology, time-series]
+categories: [R, topology, time-series, Topological Data Analysis, Time Series Analysis, Data Imputation, Mathematical Modeling, Connectivity Analysis, Structural Breaks, Time Series Segmentation, Computational Topology, Persistent Homology, Method Validation, Decision Rules, Econometrics, Neuroscience Applications, Climate Science, Signal Processing, Algorithm Development, Statistical Software, Data Quality Assurance, Model Governance, Mathematical Statistics,Statistics, Mathematics, Applied Mathematics, Imputation, Marx, Engels, GitHub]
 format:
   html:
     toc: true

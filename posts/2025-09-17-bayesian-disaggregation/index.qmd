@@ -3,7 +3,7 @@ title: "BAYESIAN ECONOMIC DISAGGREGATION: A DETERMINISTIC, DIAGNOSTICS-FIRST WOR
 description: "From Prior Weights to Posterior Sectoral Shares With Coherence, Stability, and Interpretability Metrics—Plus a Synthetic Demo."
 author: "José Mauricio Gómez Julián"
 date: 2025-09-17
-categories: [R, packages, Bayesian]
+categories: [R, packages, Bayesian, Econometrics, Data Science, Statistics, Time Series, Disaggregation, PCA, SVD, Bayesian Inference, Compositional Data, Economic Analysis, CPI, Inflation, Uncertainty Quantification, Analytical Methods, Structure Transfer, Neuroscience Applications, Climate Science, Epidemiology, Signal Processing, Machine Learning, Policy Analysis, Central Banking, Research, Method, Marx, Engels, GitHub]
 format:
   html:
     toc: true

@@ -3,7 +3,7 @@ title: "EconCausal: Herramientas Bayesianas y Econométricas para Causalidad Pre
 description: "Tres Motores Complementarios: GLM Bayesiano con AR(1), Series de Tiempo Estructurales Bayesianas con Spike-and-Slab, y ECM con MARS"
 author: "José Mauricio Gómez Julián"
 date: 2025-09-17
-categories: [R, paquetes, Bayesiano, econometría]
+categories: [R, paquetes, Bayesiano, econometría, Inferencia Causal, Análisis de Series de Tiempo, Modelado Predictivo, Series de Tiempo Estructurales, Modelos de Corrección de Error, MARS, Aprendizaje Automático, Validación Estadística, Pruebas Fuera de Muestra, ELPD, Modelado Econométrico, Modelos de Espacio de Estado, Spike-and-Slab, Cointegración, Modelado No Lineal, Pronóstico Probabilístico, Comparación de Modelos, Métodos de Triangulación, Pronóstico Económico, Econometría Financiera, Econometría, Aplicaciones, Marx, Engels, GitHub]
 format:
   html:
     toc: true

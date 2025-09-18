@@ -3,7 +3,7 @@ title: "EconCausal: Bayesian & Econometric Tools for Predictive Causality"
 description: "Three Complementary Engines: Bayesian GLM with AR(1), Bayesian Structural Time Series With Spike-And-Slab, and ECM with MARS"
 author: "José Mauricio Gómez Julián"
 date: 2025-09-17
-categories: [R, packages, Bayesian, econometrics]
+categories: [R, packages, Bayesian, econometrics, Causal Inference, Time Series Analysis, Predictive Modeling, Structural Time Series, Error Correction Models, MARS, Machine Learning, Statistical Validation, Out-of-Sample Testing, ELPD, Econometric Modeling, State Space Models, Spike-and-Slab, Cointegration, Nonlinear Modeling, Probabilistic Forecasting, Model Comparison, Triangulation Methods, Economic Forecasting, Financial Econometrics, Applied, Applications, Econometrics, Marx, Engels, GitHub]
 format:
   html:
     toc: true

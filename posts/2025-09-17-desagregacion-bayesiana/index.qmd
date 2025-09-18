@@ -3,7 +3,7 @@ title: "DESAGREGACIÓN ECONÓMICA BAYESIANA: UN FLUJO DETERMINISTA ORIENTADO A D
 description: "De pesos previos a participaciones sectoriales posteriores con métricas de coherencia, estabilidad e interpretabilidad — más una demo sintética."
 author: "José Mauricio Gómez Julián"
 date: 2025-09-17
-categories: [R, packages, Bayesian]
+categories: [R, packages, Bayesian, Econometría, Ciencia de Datos, Estadística, Series de Tiempo, Desagregación, PCA, SVD, Inferencia Bayesiana, Datos Composicionales, Análisis Económico, IPC, Inflación, Cuantificación de Incertidumbre, Métodos Analíticos, Transferencia de Estructura, Aplicaciones en Neurociencia, Climatología, Epidemiología, Procesamiento de Señales, Aprendizaje Automático, Análisis de Políticas, Banca Central, Método, Investigación, Marx, Engels, GitHub]
 format:
   html:
     toc: true
