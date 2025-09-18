@@ -1,10 +1,14 @@
 project:
   type: website
   output-dir: docs
-
 website:
   title: "PHILOSOPHY OF STATISTICS — Lab Notes"
   site-url: "https://IsadoreNabi.github.io/philosophy-of-statistics"
+  
+  feed:
+    type: full-text
+    items: 20
+    
   navbar:
     left:
       - text: Home
@@ -12,8 +16,8 @@ website:
       - text: About
         href: about.qmd
     right:
-      - text: "R-bloggers"  # ← AGREGAR ESTO
-        href: "https://www.r-bloggers.com"  # ← Y ESTO
+      - text: "R-bloggers"
+        href: "https://www.r-bloggers.com"
       - text: "Powered by Marxist Philosophy of Science"
         href: "https://www.marxistphilosophyofscience.com"
       - icon: rss
@@ -21,9 +25,7 @@ website:
   page-footer:
     left: 'Powered by <a href="https://www.marxistphilosophyofscience.com">Marxist Philosophy of Science</a>'
     right: "© 2025 José Mauricio Gómez Julián"
-
 format:
   html:
     theme: cosmo
-
 editor: visual
