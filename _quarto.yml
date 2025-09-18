@@ -12,6 +12,8 @@ website:
       - text: About
         href: about.qmd
     right:
+      - text: "R-bloggers"  # ← AGREGAR ESTO
+        href: "https://www.r-bloggers.com"  # ← Y ESTO
       - text: "Powered by Marxist Philosophy of Science"
         href: "https://www.marxistphilosophyofscience.com"
       - icon: rss
