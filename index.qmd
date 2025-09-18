@@ -2,7 +2,9 @@
 title: "PHILOSOPHY OF STATISTICS — Lab Notes"
 listing:
   contents: posts
-  feed: true
+  feed: 
+    type: full
+    items: 20
   sort: "date desc"
   type: default
   categories: true
